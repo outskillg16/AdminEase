@@ -4,6 +4,7 @@ import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
+import AIConfiguration from './components/AIConfiguration';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -57,6 +58,16 @@ function App() {
           element={
             user ? (
               <OnboardingForm user={user} onLogout={handleSignOut} onComplete={() => window.location.href = '/dashboard'} />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          }
+        />
+        <Route
+          path="/ai-configuration"
+          element={
+            user ? (
+              <AIConfiguration user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/auth" />
             )
