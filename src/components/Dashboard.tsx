@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User,
   Settings,
@@ -16,10 +17,14 @@ import {
   MessageSquare,
   TrendingUp,
   Zap,
+  Edit,
+  ArrowRight,
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface DashboardProps {
   user: {
+    id: string;
     email: string;
     user_metadata?: {
       full_name?: string;
@@ -37,8 +42,11 @@ interface Activity {
 }
 
 export default function Dashboard({ user, onLogout }: DashboardProps) {
+  const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [profileComplete, setProfileComplete] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(true);
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -52,6 +60,29 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    checkProfileStatus();
+  }, []);
+
+  const checkProfileStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .select('business_configured')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      setProfileComplete(data?.business_configured ?? false);
+    } catch (err) {
+      console.error('Error checking profile:', err);
+      setProfileComplete(false);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
 
   const stats = [
     { label: 'Total Projects', value: 24, icon: Folder, color: 'bg-blue-500', trend: '+12%' },
@@ -170,6 +201,13 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     <User className="w-4 h-4" />
                     <span>Profile</span>
                   </button>
+                  <button
+                    onClick={() => navigate('/onboarding')}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit Business Profile</span>
+                  </button>
                   <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition">
                     <Settings className="w-4 h-4" />
                     <span>Settings</span>
@@ -222,6 +260,35 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             </div>
           </div>
         </div>
+
+        {/* Complete Profile CTA - Show if profile incomplete */}
+        {!checkingProfile && !profileComplete && (
+          <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl shadow-xl p-8 mb-8 text-white animate-slide-up">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Edit className="w-6 h-6" />
+                  <h3 className="text-2xl font-bold">Complete Your Business Profile</h3>
+                </div>
+                <p className="text-cyan-100 mb-4">
+                  Tell us more about your business to unlock personalized features and get the most out of AdminEase.
+                </p>
+                <button
+                  onClick={() => navigate('/onboarding')}
+                  className="bg-white text-cyan-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition inline-flex items-center space-x-2 shadow-lg"
+                >
+                  <span>Complete Profile Now</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="mt-6 md:mt-0 md:ml-6">
+                <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                  <Edit className="w-12 h-12" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

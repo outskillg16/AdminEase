@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -16,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
   Settings,
+  ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -84,6 +86,7 @@ const ALLOWED_FILE_TYPES = [
 ];
 
 export default function OnboardingForm({ user, onLogout, onComplete }: OnboardingFormProps) {
+  const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
@@ -387,12 +390,22 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                <Zap className="w-6 h-6 text-white" />
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition mr-4"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm font-medium">Back to Dashboard</span>
+              </button>
+              <div className="h-8 w-px bg-gray-300"></div>
+              <div className="flex items-center space-x-3 ml-4">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  AdminEase
+                </span>
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AdminEase
-              </span>
             </div>
 
             <div className="relative">
