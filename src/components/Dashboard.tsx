@@ -19,6 +19,8 @@ import {
   Zap,
   Edit,
   ArrowRight,
+  Menu,
+  X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -47,6 +49,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileComplete, setProfileComplete] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
+  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -176,8 +180,39 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </span>
             </div>
 
-            {/* User Profile */}
-            <div className="relative">
+            {/* Navigation Links */}
+            <nav className="hidden md:flex items-center space-x-1">
+              {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                    activeTab === tab
+                      ? 'text-blue-600 border-blue-600'
+                      : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </nav>
+
+            {/* Right Side - Mobile Menu + User Profile */}
+            <div className="flex items-center space-x-2">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition"
+              >
+                {showMobileMenu ? (
+                  <X className="w-6 h-6 text-gray-600" />
+                ) : (
+                  <Menu className="w-6 h-6 text-gray-600" />
+                )}
+              </button>
+
+              {/* User Profile */}
+              <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
@@ -222,8 +257,33 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                   </button>
                 </div>
               )}
+              </div>
             </div>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {showMobileMenu && (
+            <div className="md:hidden border-t border-gray-200 py-3 animate-fade-in">
+              <nav className="flex flex-col space-y-1">
+                {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      setShowMobileMenu(false);
+                    }}
+                    className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 ${
+                      activeTab === tab
+                        ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
+                        : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
