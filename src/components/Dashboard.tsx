@@ -185,7 +185,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (tab === 'Onboarding') {
+                      navigate('/onboarding');
+                    }
+                  }}
                   className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
                     activeTab === tab
                       ? 'text-blue-600 border-blue-600'
@@ -271,6 +276,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     onClick={() => {
                       setActiveTab(tab);
                       setShowMobileMenu(false);
+                      if (tab === 'Onboarding') {
+                        navigate('/onboarding');
+                      }
                     }}
                     className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 ${
                       activeTab === tab
