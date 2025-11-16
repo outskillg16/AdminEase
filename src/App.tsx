@@ -1,9 +1,36 @@
 import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import AuthPage from './components/AuthPage';
+import { supabase } from './lib/supabase';
 
 function App() {
   const [email, setEmail] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
+  if (showAuth) {
+    return <AuthPage />;
+  }
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,12 +54,34 @@ function App() {
             <a href="#faq" className="text-gray-600 hover:text-blue-600 transition">FAQ</a>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition">
-              Log In
-            </button>
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
-              Sign Up
-            </button>
+            {user ? (
+              <>
+                <span className="text-sm text-gray-600">
+                  Welcome, {user.user_metadata?.full_name || user.email}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  className="px-4 py-2 text-red-600 hover:text-red-700 font-medium transition"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => setShowAuth(true)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </nav>
       </header>
