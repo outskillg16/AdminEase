@@ -88,6 +88,7 @@ const ALLOWED_FILE_TYPES = [
 export default function OnboardingForm({ user, onLogout, onComplete }: OnboardingFormProps) {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
     customerName: user.user_metadata?.full_name || '',
@@ -128,6 +129,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       if (error) throw error;
 
       if (data) {
+        setIsEditMode(true);
         setFormData({
           businessName: data.business_name,
           customerName: data.customer_name,
@@ -371,9 +373,13 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to AdminEase!</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            {isEditMode ? 'Profile Updated!' : 'Welcome to AdminEase!'}
+          </h2>
           <p className="text-gray-600 mb-6">
-            Your business profile has been successfully configured. Redirecting to your dashboard...
+            {isEditMode
+              ? 'Your business profile has been successfully updated. Redirecting to your dashboard...'
+              : 'Your business profile has been successfully configured. Redirecting to your dashboard...'}
           </p>
           <div className="flex justify-center">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
@@ -455,9 +461,13 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           {/* Page Title */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Business Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              {isEditMode ? 'Edit Your Business Profile' : 'Complete Your Business Profile'}
+            </h1>
             <p className="text-gray-600">
-              Help us understand your business better by providing the following information.
+              {isEditMode
+                ? 'Update your business information and documents as needed.'
+                : 'Help us understand your business better by providing the following information.'}
             </p>
           </div>
 
@@ -734,12 +744,12 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                 {loading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Setting up your profile...</span>
+                    <span>{isEditMode ? 'Updating your profile...' : 'Setting up your profile...'}</span>
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="w-5 h-5" />
-                    <span>Complete Onboarding</span>
+                    <span>{isEditMode ? 'Save Changes' : 'Complete Onboarding'}</span>
                   </>
                 )}
               </button>
