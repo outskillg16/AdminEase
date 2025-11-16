@@ -508,7 +508,7 @@ function BasicSettings({ config, setConfig }: { config: AIConfig; setConfig: (co
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            System Prompt / Instructions
+            Greeting Message
           </label>
           <textarea
             value={config.systemPrompt}
