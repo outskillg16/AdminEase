@@ -2,6 +2,7 @@ import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users,
 import { useState, useEffect } from 'react';
 import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
+import OnboardingForm from './components/OnboardingForm';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -9,10 +10,17 @@ function App() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [showAuth, setShowAuth] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkOnboardingStatus(session.user.id);
+      } else {
+        setCheckingOnboarding(false);
+      }
     });
 
     const {
@@ -21,16 +29,60 @@ function App() {
       setUser(session?.user ?? null);
       if (session?.user) {
         setShowAuth(false);
+        checkOnboardingStatus(session.user.id);
+      } else {
+        setCheckingOnboarding(false);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkOnboardingStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .select('business_configured')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      setNeedsOnboarding(!data || !data.business_configured);
+    } catch (err) {
+      console.error('Error checking onboarding:', err);
+      setNeedsOnboarding(true);
+    } finally {
+      setCheckingOnboarding(false);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setNeedsOnboarding(false);
   };
+
+  const handleOnboardingComplete = () => {
+    setNeedsOnboarding(false);
+  };
+
+  if (checkingOnboarding) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && needsOnboarding) {
+    return <OnboardingForm user={user} onLogout={handleSignOut} onComplete={handleOnboardingComplete} />;
+  }
 
   if (user) {
     return <Dashboard user={user} onLogout={handleSignOut} />;
