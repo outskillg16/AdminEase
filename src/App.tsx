@@ -1,6 +1,7 @@
 import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import AuthPage from './components/AuthPage';
+import Dashboard from './components/Dashboard';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -18,6 +19,9 @@ function App() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setShowAuth(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -27,6 +31,10 @@ function App() {
     await supabase.auth.signOut();
     setUser(null);
   };
+
+  if (user) {
+    return <Dashboard user={user} onLogout={handleSignOut} />;
+  }
 
   if (showAuth) {
     return <AuthPage />;
