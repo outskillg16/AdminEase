@@ -193,6 +193,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     if (tab === 'AI Configuration') {
                       navigate('/ai-configuration');
                     }
+                    if (tab === 'Call Management') {
+                      navigate('/call-management');
+                    }
                   }}
                   className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
                     activeTab === tab
@@ -284,6 +287,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       }
                       if (tab === 'AI Configuration') {
                         navigate('/ai-configuration');
+                      }
+                      if (tab === 'Call Management') {
+                        navigate('/call-management');
                       }
                     }}
                     className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 ${

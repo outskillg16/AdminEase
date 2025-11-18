@@ -5,6 +5,7 @@ import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
+import CallManagement from './components/CallManagement';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -68,6 +69,16 @@ function App() {
           element={
             user ? (
               <AIConfiguration user={user} onLogout={handleSignOut} />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          }
+        />
+        <Route
+          path="/call-management"
+          element={
+            user ? (
+              <CallManagement user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/auth" />
             )
