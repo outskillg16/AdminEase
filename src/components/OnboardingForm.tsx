@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -6,16 +6,11 @@ import {
   Phone,
   Building2,
   Briefcase,
-  Upload,
-  File,
-  Eye,
-  Trash2,
   AlertCircle,
   CheckCircle2,
   Loader2,
   Zap,
   LogOut,
-  ChevronDown,
   Settings,
   Menu,
   X,
@@ -43,27 +38,6 @@ interface FormData {
   termsAccepted: boolean;
 }
 
-interface UploadedDocument {
-  id: string;
-  documentType: string;
-  fileName: string;
-  filePath: string;
-  fileSize: number;
-  mimeType: string;
-}
-
-const DOCUMENT_TYPES = [
-  { value: '', label: 'Select document type...' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'invoice', label: 'Invoice' },
-  { value: 'receipt', label: 'Receipt' },
-  { value: 'legal', label: 'Legal Document' },
-  { value: 'tax', label: 'Tax Document' },
-  { value: 'license', label: 'License' },
-  { value: 'certificate', label: 'Certificate' },
-  { value: 'other', label: 'Other' },
-];
-
 const INDUSTRIES = [
   '',
   'Technology',
@@ -75,15 +49,6 @@ const INDUSTRIES = [
   'Real Estate',
   'Professional Services',
   'Other',
-];
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES = 6;
-const MIN_FILES = 1;
-const ALLOWED_FILE_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
 export default function OnboardingForm({ user, onLogout, onComplete }: OnboardingFormProps) {
@@ -100,14 +65,9 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     industry: '',
     termsAccepted: false,
   });
-  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
-  const [documentType, setDocumentType] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -151,24 +111,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
           industry: data.industry,
           termsAccepted: data.terms_accepted,
         });
-
-        const { data: docs } = await supabase
-          .from('business_documents')
-          .select('*')
-          .eq('user_id', user.id);
-
-        if (docs) {
-          setUploadedDocuments(
-            docs.map((doc) => ({
-              id: doc.id,
-              documentType: doc.document_type,
-              fileName: doc.file_name,
-              filePath: doc.file_path,
-              fileSize: doc.file_size,
-              mimeType: doc.mime_type,
-            }))
-          );
-        }
       }
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -201,11 +143,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       return false;
     }
 
-    if (uploadedDocuments.length < MIN_FILES) {
-      setError(`Please upload at least ${MIN_FILES} document`);
-      return false;
-    }
-
     if (!formData.termsAccepted) {
       setError('You must accept the terms and conditions');
       return false;
@@ -217,99 +154,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      setError('Only PDF, DOC, and DOCX files are allowed');
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-      setError('File size must be less than 10MB');
-      return;
-    }
-
-    setSelectedFile(file);
-    setError(null);
-  };
-
-  const handleUploadFile = async () => {
-    if (!selectedFile || !documentType) return;
-
-    if (uploadedDocuments.length >= MAX_FILES) {
-      setError(`Maximum ${MAX_FILES} documents allowed`);
-      return;
-    }
-
-    setUploadingFile(true);
-    setError(null);
-
-    try {
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${user.id}/${documentType}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('business-documents')
-        .upload(filePath, selectedFile);
-
-      if (uploadError) throw uploadError;
-
-      const newDoc: UploadedDocument = {
-        id: crypto.randomUUID(),
-        documentType,
-        fileName: selectedFile.name,
-        filePath,
-        fileSize: selectedFile.size,
-        mimeType: selectedFile.type,
-      };
-
-      setUploadedDocuments((prev) => [...prev, newDoc]);
-      setSelectedFile(null);
-      setDocumentType('');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (err: any) {
-      console.error('Upload error:', err);
-      setError(err.message || 'Failed to upload file');
-    } finally {
-      setUploadingFile(false);
-    }
-  };
-
-  const handleDeleteDocument = async (doc: UploadedDocument) => {
-    try {
-      const { error: deleteError } = await supabase.storage
-        .from('business-documents')
-        .remove([doc.filePath]);
-
-      if (deleteError) throw deleteError;
-
-      setUploadedDocuments((prev) => prev.filter((d) => d.id !== doc.id));
-    } catch (err: any) {
-      console.error('Delete error:', err);
-      setError(err.message || 'Failed to delete file');
-    }
-  };
-
-  const handleViewDocument = async (doc: UploadedDocument) => {
-    try {
-      const { data } = await supabase.storage
-        .from('business-documents')
-        .createSignedUrl(doc.filePath, 60);
-
-      if (data?.signedUrl) {
-        window.open(data.signedUrl, '_blank');
-      }
-    } catch (err: any) {
-      console.error('View error:', err);
-      setError(err.message || 'Failed to view file');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -340,25 +184,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
 
       if (profileError) throw profileError;
 
-      for (const doc of uploadedDocuments) {
-        const { error: docError } = await supabase.from('business_documents').upsert(
-          {
-            id: doc.id,
-            business_profile_id: profile.id,
-            user_id: user.id,
-            document_type: doc.documentType,
-            file_name: doc.fileName,
-            file_path: doc.filePath,
-            file_size: doc.fileSize,
-            mime_type: doc.mimeType,
-            upload_status: 'uploaded',
-          },
-          { onConflict: 'id' }
-        );
-
-        if (docError) throw docError;
-      }
-
       setSuccess(true);
       setTimeout(() => {
         onComplete();
@@ -369,14 +194,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     } finally {
       setLoading(false);
     }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
   };
 
   if (success) {
@@ -644,127 +461,6 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     </select>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Document Upload Section */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <Upload className="w-5 h-5 text-cyan-600" />
-                <span>Document Upload</span>
-              </h2>
-
-              <div className="space-y-4">
-                {/* Document Type Selector */}
-                <div>
-                  <label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-2">
-                    Document Type
-                  </label>
-                  <select
-                    id="documentType"
-                    value={documentType}
-                    onChange={(e) => setDocumentType(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
-                  >
-                    {DOCUMENT_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* File Upload Area */}
-                <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    onChange={handleFileSelect}
-                    accept=".pdf,.doc,.docx"
-                    className="hidden"
-                    disabled={!documentType}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!documentType}
-                    className={`w-full border-2 border-dashed rounded-lg p-8 text-center transition ${
-                      !documentType
-                        ? 'border-slate-300 bg-slate-50 opacity-60 cursor-not-allowed'
-                        : 'border-blue-300 bg-white hover:bg-blue-50 cursor-pointer'
-                    }`}
-                  >
-                    <Upload className="w-8 h-8 mx-auto mb-3 text-gray-400" />
-                    <p className="text-sm text-gray-600 mb-1">
-                      {selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      PDF, DOC, DOCX up to 10MB
-                    </p>
-                  </button>
-
-                  {selectedFile && (
-                    <button
-                      type="button"
-                      onClick={handleUploadFile}
-                      disabled={uploadingFile}
-                      className="mt-3 w-full px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                    >
-                      {uploadingFile ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4" />
-                          <span>Upload File</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {/* Uploaded Documents List */}
-                {uploadedDocuments.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">
-                      Uploaded Documents ({uploadedDocuments.length}/{MAX_FILES})
-                    </p>
-                    {uploadedDocuments.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-lg hover:border-slate-300 transition"
-                      >
-                        <div className="flex items-center space-x-3 flex-1 min-w-0">
-                          <div className="w-10 h-10 bg-cyan-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <File className="w-5 h-5 text-cyan-600" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{doc.fileName}</p>
-                            <p className="text-xs text-gray-500 uppercase">{doc.documentType} • {formatFileSize(doc.fileSize)}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => handleViewDocument(doc)}
-                            className="p-2 text-cyan-600 hover:bg-cyan-50 rounded-lg transition"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDocument(doc)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
 
