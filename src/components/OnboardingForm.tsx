@@ -6,6 +6,7 @@ import {
   Phone,
   Building2,
   Briefcase,
+  MapPin,
   AlertCircle,
   CheckCircle2,
   Loader2,
@@ -35,6 +36,11 @@ interface FormData {
   email: string;
   phoneNumber: string;
   industry: string;
+  addressNumber: string;
+  streetName: string;
+  city: string;
+  state: string;
+  zipCode: string;
   termsAccepted: boolean;
 }
 
@@ -56,6 +62,61 @@ const INDUSTRIES = [
   'Other',
 ];
 
+const US_STATES = [
+  { value: '', label: 'Select state...' },
+  { value: 'AL', label: 'AL - Alabama' },
+  { value: 'AK', label: 'AK - Alaska' },
+  { value: 'AZ', label: 'AZ - Arizona' },
+  { value: 'AR', label: 'AR - Arkansas' },
+  { value: 'CA', label: 'CA - California' },
+  { value: 'CO', label: 'CO - Colorado' },
+  { value: 'CT', label: 'CT - Connecticut' },
+  { value: 'DE', label: 'DE - Delaware' },
+  { value: 'FL', label: 'FL - Florida' },
+  { value: 'GA', label: 'GA - Georgia' },
+  { value: 'HI', label: 'HI - Hawaii' },
+  { value: 'ID', label: 'ID - Idaho' },
+  { value: 'IL', label: 'IL - Illinois' },
+  { value: 'IN', label: 'IN - Indiana' },
+  { value: 'IA', label: 'IA - Iowa' },
+  { value: 'KS', label: 'KS - Kansas' },
+  { value: 'KY', label: 'KY - Kentucky' },
+  { value: 'LA', label: 'LA - Louisiana' },
+  { value: 'ME', label: 'ME - Maine' },
+  { value: 'MD', label: 'MD - Maryland' },
+  { value: 'MA', label: 'MA - Massachusetts' },
+  { value: 'MI', label: 'MI - Michigan' },
+  { value: 'MN', label: 'MN - Minnesota' },
+  { value: 'MS', label: 'MS - Mississippi' },
+  { value: 'MO', label: 'MO - Missouri' },
+  { value: 'MT', label: 'MT - Montana' },
+  { value: 'NE', label: 'NE - Nebraska' },
+  { value: 'NV', label: 'NV - Nevada' },
+  { value: 'NH', label: 'NH - New Hampshire' },
+  { value: 'NJ', label: 'NJ - New Jersey' },
+  { value: 'NM', label: 'NM - New Mexico' },
+  { value: 'NY', label: 'NY - New York' },
+  { value: 'NC', label: 'NC - North Carolina' },
+  { value: 'ND', label: 'ND - North Dakota' },
+  { value: 'OH', label: 'OH - Ohio' },
+  { value: 'OK', label: 'OK - Oklahoma' },
+  { value: 'OR', label: 'OR - Oregon' },
+  { value: 'PA', label: 'PA - Pennsylvania' },
+  { value: 'RI', label: 'RI - Rhode Island' },
+  { value: 'SC', label: 'SC - South Carolina' },
+  { value: 'SD', label: 'SD - South Dakota' },
+  { value: 'TN', label: 'TN - Tennessee' },
+  { value: 'TX', label: 'TX - Texas' },
+  { value: 'UT', label: 'UT - Utah' },
+  { value: 'VT', label: 'VT - Vermont' },
+  { value: 'VA', label: 'VA - Virginia' },
+  { value: 'WA', label: 'WA - Washington' },
+  { value: 'WV', label: 'WV - West Virginia' },
+  { value: 'WI', label: 'WI - Wisconsin' },
+  { value: 'WY', label: 'WY - Wyoming' },
+  { value: 'DC', label: 'DC - District of Columbia' },
+];
+
 export default function OnboardingForm({ user, onLogout, onComplete }: OnboardingFormProps) {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -68,6 +129,11 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     email: user.email,
     phoneNumber: '',
     industry: '',
+    addressNumber: '',
+    streetName: '',
+    city: '',
+    state: '',
+    zipCode: '',
     termsAccepted: false,
   });
   const [loading, setLoading] = useState(false);
@@ -114,6 +180,11 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
           email: data.email,
           phoneNumber: data.phone_number,
           industry: data.industry,
+          addressNumber: data.address_number || '',
+          streetName: data.street_name || '',
+          city: data.city || '',
+          state: data.state || '',
+          zipCode: data.zip_code || '',
           termsAccepted: data.terms_accepted,
         });
       }
@@ -148,6 +219,31 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       return false;
     }
 
+    if (!formData.addressNumber.trim()) {
+      setError('Address number is required');
+      return false;
+    }
+
+    if (!formData.streetName.trim()) {
+      setError('Street name is required');
+      return false;
+    }
+
+    if (!formData.city.trim()) {
+      setError('City is required');
+      return false;
+    }
+
+    if (!formData.state) {
+      setError('Please select a state');
+      return false;
+    }
+
+    if (!formData.zipCode.trim()) {
+      setError('Zip code is required');
+      return false;
+    }
+
     if (!formData.termsAccepted) {
       setError('You must accept the terms and conditions');
       return false;
@@ -177,6 +273,11 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
         email: formData.email,
         phone_number: formData.phoneNumber,
         industry: formData.industry,
+        address_number: formData.addressNumber,
+        street_name: formData.streetName,
+        city: formData.city,
+        state: formData.state,
+        zip_code: formData.zipCode,
         terms_accepted: formData.termsAccepted,
         business_configured: true,
       };
@@ -465,6 +566,101 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       ))}
                     </select>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Business Address Section */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                <MapPin className="w-5 h-5 text-cyan-600" />
+                <span>Business Address</span>
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Address Number */}
+                <div>
+                  <label htmlFor="addressNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                    Address Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="addressNumber"
+                    required
+                    value={formData.addressNumber}
+                    onChange={(e) => handleInputChange('addressNumber', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    placeholder="123"
+                  />
+                </div>
+
+                {/* Street Name */}
+                <div>
+                  <label htmlFor="streetName" className="block text-sm font-medium text-gray-700 mb-2">
+                    Street Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="streetName"
+                    required
+                    value={formData.streetName}
+                    onChange={(e) => handleInputChange('streetName', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    placeholder="Main Street"
+                  />
+                </div>
+
+                {/* City */}
+                <div>
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-2">
+                    City <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    required
+                    value={formData.city}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    placeholder="New York"
+                  />
+                </div>
+
+                {/* State */}
+                <div>
+                  <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">
+                    State <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="state"
+                    required
+                    value={formData.state}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none"
+                  >
+                    {US_STATES.map((state) => (
+                      <option key={state.value} value={state.value}>
+                        {state.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Zip Code */}
+                <div>
+                  <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-2">
+                    Zip Code <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    required
+                    value={formData.zipCode}
+                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    placeholder="10001"
+                    maxLength={10}
+                  />
                 </div>
               </div>
             </div>
