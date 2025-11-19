@@ -171,14 +171,17 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            >
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 AdminEase
               </span>
-            </div>
+            </button>
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center space-x-1">
