@@ -7,6 +7,7 @@ import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
 import CallManagement from './components/CallManagement';
 import Appointments from './components/Appointments';
+import Documents from './components/Documents';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -90,6 +91,16 @@ function App() {
           element={
             user ? (
               <Appointments user={user} onLogout={handleSignOut} />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            user ? (
+              <Documents user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/auth" />
             )
