@@ -89,7 +89,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   };
 
   const stats = [
-    { label: 'Total Projects', value: 24, icon: Folder, color: 'bg-blue-500', trend: '+12%' },
+    { label: 'Total Calls', value: 24, icon: Folder, color: 'bg-blue-500', trend: '+12%' },
     { label: 'Active Tasks', value: 18, icon: CheckSquare, color: 'bg-green-500', trend: '+8%' },
     { label: 'Team Members', value: 12, icon: Users, color: 'bg-purple-500', trend: '+3' },
     { label: 'Notifications', value: 5, icon: Bell, color: 'bg-orange-500', trend: 'New' },
