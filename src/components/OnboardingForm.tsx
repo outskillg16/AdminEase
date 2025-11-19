@@ -40,14 +40,19 @@ interface FormData {
 
 const INDUSTRIES = [
   '',
-  'Technology',
-  'Healthcare',
-  'Finance',
-  'Retail',
-  'Manufacturing',
-  'Education',
-  'Real Estate',
-  'Professional Services',
+  'Carpet Cleaning',
+  'Home Repair',
+  'Landscaping',
+  'Mobile Car Detailing',
+  'Mobile Massage',
+  'Personal Trainer',
+  'Pet Chef/MealPrep',
+  'Pet Grooming',
+  'Pet Walking',
+  'Salon Services',
+  'Personal Training',
+  'Tutoring',
+  'Window Cleaning',
   'Other',
 ];
 
