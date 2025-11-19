@@ -17,7 +17,8 @@ import {
   LogOut,
   ChevronDown,
   Settings,
-  ArrowLeft,
+  Menu,
+  X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -88,6 +89,8 @@ const ALLOWED_FILE_TYPES = [
 export default function OnboardingForm({ user, onLogout, onComplete }: OnboardingFormProps) {
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [activeTab, setActiveTab] = useState('Onboarding');
   const [isEditMode, setIsEditMode] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     businessName: '',
@@ -113,6 +116,16 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab);
+    if (tab === 'Dashboard') navigate('/dashboard');
+    if (tab === 'Onboarding') navigate('/onboarding');
+    if (tab === 'AI Configuration') navigate('/ai-configuration');
+    if (tab === 'Call Management') navigate('/call-management');
+    if (tab === 'Appointments') navigate('/appointments');
+    if (tab === 'Documents') navigate('/documents');
+  };
 
   useEffect(() => {
     checkExistingProfile();
@@ -396,63 +409,100 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-2 rounded-lg">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                AdminEase
+              </span>
+            </div>
+
+            <nav className="hidden md:flex items-center space-x-1">
+              {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => handleNavigate(tab)}
+                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                    activeTab === tab
+                      ? 'text-cyan-600 border-cyan-600'
+                      : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </nav>
+
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => navigate('/dashboard')}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition mr-4"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition"
               >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Back to Dashboard</span>
+                {showMobileMenu ? <X className="w-6 h-6 text-gray-600" /> : <Menu className="w-6 h-6 text-gray-600" />}
               </button>
-              <div className="h-8 w-px bg-gray-300"></div>
-              <div className="flex items-center space-x-3 ml-4">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  AdminEase
-                </span>
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-semibold text-gray-900">{fullName}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                    </div>
+                    <div className="w-10 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-sm">{initials}</span>
+                    </div>
+                  </div>
+                </button>
+
+                {showProfileMenu && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                    <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2">
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </button>
+                    <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2">
+                      <Settings className="w-4 h-4" />
+                      <span>Settings</span>
+                    </button>
+                    <hr className="my-2 border-gray-200" />
+                    <button
+                      onClick={onLogout}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
-
-            <div className="relative">
-              <button
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-sm font-semibold text-gray-900">{fullName}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">{initials}</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-gray-500" />
-                </div>
-              </button>
-
-              {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 animate-fade-in">
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition">
-                    <User className="w-4 h-4" />
-                    <span>Profile</span>
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2 transition">
-                    <Settings className="w-4 h-4" />
-                    <span>Settings</span>
-                  </button>
-                  <hr className="my-2 border-gray-200" />
-                  <button
-                    onClick={onLogout}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2 transition"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
+
+          {showMobileMenu && (
+            <div className="md:hidden border-t border-gray-200 py-3">
+              <nav className="flex flex-col space-y-1">
+                {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      handleNavigate(tab);
+                      setShowMobileMenu(false);
+                    }}
+                    className={`px-4 py-3 text-sm font-medium text-left transition-all ${
+                      activeTab === tab
+                        ? 'bg-cyan-50 text-cyan-600 border-l-4 border-cyan-600'
+                        : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          )}
         </div>
       </header>
 
