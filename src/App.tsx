@@ -106,7 +106,7 @@ function App() {
             )
           }
         />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
