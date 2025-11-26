@@ -50,7 +50,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage user={user} onSignOut={handleSignOut} />} />
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage user={user} onSignOut={handleSignOut} />} />
         <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
         <Route
           path="/dashboard"
