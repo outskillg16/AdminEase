@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Github, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -29,6 +29,10 @@ interface Toast {
 
 export default function AuthPage() {
   const [view, setView] = useState<AuthView>('login');
+
+  useEffect(() => {
+    document.title = view === 'login' ? 'Sign In - AdminEase' : 'Sign Up - AdminEase';
+  }, [view]);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);

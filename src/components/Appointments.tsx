@@ -91,6 +91,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
   const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   useEffect(() => {
+    document.title = 'Appointments - AdminEase';
     loadAppointments();
   }, []);
 

@@ -90,6 +90,7 @@ export default function Documents({ user, onLogout }: DocumentsProps) {
   const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   useEffect(() => {
+    document.title = 'Documents - AdminEase';
     loadDocuments();
   }, []);
 

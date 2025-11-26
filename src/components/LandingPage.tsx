@@ -1,5 +1,5 @@
 import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface LandingPageProps {
@@ -11,6 +11,10 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.title = 'AdminEase - AI-Powered Business Management';
+  }, []);
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();

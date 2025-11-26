@@ -61,6 +61,10 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     .slice(0, 2);
 
   useEffect(() => {
+    document.title = 'Dashboard - AdminEase';
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);

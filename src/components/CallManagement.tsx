@@ -103,6 +103,7 @@ export default function CallManagement({ user, onLogout }: CallManagementProps) 
     .slice(0, 2);
 
   useEffect(() => {
+    document.title = 'Call Management - AdminEase';
     loadCalls();
   }, []);
 

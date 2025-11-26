@@ -161,6 +161,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
   };
 
   useEffect(() => {
+    document.title = 'Onboarding - AdminEase';
     checkExistingProfile();
   }, []);
 

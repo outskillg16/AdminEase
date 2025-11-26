@@ -65,6 +65,7 @@ export default function AIConfigurationPage({ user, onLogout }: AIConfigurationP
     .slice(0, 2);
 
   useEffect(() => {
+    document.title = 'AI Configuration - AdminEase';
     loadConfiguration();
   }, []);
 
