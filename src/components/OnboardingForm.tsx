@@ -15,6 +15,7 @@ import {
   Settings,
   Menu,
   X,
+  Edit,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -139,6 +140,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -173,7 +175,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       if (error) throw error;
 
       if (data) {
-        setIsEditMode(true);
+        setIsEditMode(false);
+        setSuccess(true);
         setFormData({
           businessName: data.business_name,
           customerName: data.customer_name,
@@ -291,9 +294,14 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       if (profileError) throw profileError;
 
       setSuccess(true);
-      setTimeout(() => {
-        onComplete();
-      }, 2000);
+      if (isEditMode) {
+        setIsEditMode(false);
+      } else {
+        setShowSuccessScreen(true);
+        setTimeout(() => {
+          onComplete();
+        }, 2000);
+      }
     } catch (err: any) {
       console.error('Submit error:', err);
       setError(err.message || 'Failed to save profile. Please try again.');
@@ -302,20 +310,16 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     }
   };
 
-  if (success) {
+  if (showSuccessScreen) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full text-center animate-slide-up">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            {isEditMode ? 'Profile Updated!' : 'Welcome to AdminEase!'}
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to AdminEase!</h2>
           <p className="text-gray-600 mb-6">
-            {isEditMode
-              ? 'Your business profile has been successfully updated. Redirecting to your dashboard...'
-              : 'Your business profile has been successfully configured. Redirecting to your dashboard...'}
+            Your business profile has been successfully configured. Redirecting to your dashboard...
           </p>
           <div className="flex justify-center">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
@@ -436,15 +440,26 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
           {/* Page Title */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {isEditMode ? 'Edit Your Business Profile' : 'Complete Your Business Profile'}
-            </h1>
-            <p className="text-gray-600">
-              {isEditMode
-                ? 'Update your business information and documents as needed.'
-                : 'Help us understand your business better by providing the following information.'}
-            </p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {isEditMode ? 'Edit Your Business Profile' : 'Complete Your Business Profile'}
+              </h1>
+              <p className="text-gray-600">
+                {isEditMode
+                  ? 'Update your business information and documents as needed.'
+                  : 'Help us understand your business better by providing the following information.'}
+              </p>
+            </div>
+            {!isEditMode && success && (
+              <button
+                onClick={() => setIsEditMode(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition font-medium"
+              >
+                <Edit className="w-4 h-4" />
+                <span>Edit</span>
+              </button>
+            )}
           </div>
 
           {/* Error Alert */}
@@ -482,7 +497,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       required
                       value={formData.businessName}
                       onChange={(e) => handleInputChange('businessName', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                      disabled={!isEditMode && success}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                       placeholder="Enter your business name"
                     />
                   </div>
@@ -501,7 +517,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       required
                       value={formData.customerName}
                       onChange={(e) => handleInputChange('customerName', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                      disabled={!isEditMode && success}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                       placeholder="John Doe"
                     />
                   </div>
@@ -520,7 +537,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       required
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                      disabled={!isEditMode && success}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                       placeholder="you@company.com"
                     />
                   </div>
@@ -539,7 +557,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       required
                       value={formData.phoneNumber}
                       onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                      disabled={!isEditMode && success}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                       placeholder="+1 (555) 000-0000"
                     />
                   </div>
@@ -557,7 +576,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       required
                       value={formData.industry}
                       onChange={(e) => handleInputChange('industry', e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none"
+                      disabled={!isEditMode && success}
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none disabled:bg-gray-50 disabled:text-gray-500"
                     >
                       {INDUSTRIES.map((industry) => (
                         <option key={industry} value={industry}>
@@ -589,7 +609,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     required
                     value={formData.addressNumber}
                     onChange={(e) => handleInputChange('addressNumber', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     placeholder="123"
                   />
                 </div>
@@ -605,7 +626,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     required
                     value={formData.streetName}
                     onChange={(e) => handleInputChange('streetName', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     placeholder="Main Street"
                   />
                 </div>
@@ -621,7 +643,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     required
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     placeholder="New York"
                   />
                 </div>
@@ -636,7 +659,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     required
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none"
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none disabled:bg-gray-50 disabled:text-gray-500"
                   >
                     {US_STATES.map((state) => (
                       <option key={state.value} value={state.value}>
@@ -657,7 +681,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                     required
                     value={formData.zipCode}
                     onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm"
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
                     placeholder="10001"
                     maxLength={10}
                   />
@@ -672,7 +697,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                   type="checkbox"
                   checked={formData.termsAccepted}
                   onChange={(e) => handleInputChange('termsAccepted', e.target.checked)}
-                  className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500 mt-1"
+                  disabled={!isEditMode && success}
+                  className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500 mt-1 disabled:opacity-50"
                 />
                 <span className="text-sm text-gray-700">
                   I agree to the{' '}
@@ -686,23 +712,38 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                 </span>
               </label>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>{isEditMode ? 'Updating your profile...' : 'Setting up your profile...'}</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>{isEditMode ? 'Save Changes' : 'Complete Onboarding'}</span>
-                  </>
-                )}
-              </button>
+{isEditMode || !success ? (
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>{isEditMode ? 'Updating your profile...' : 'Setting up your profile...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>{isEditMode ? 'Save Changes' : 'Complete Onboarding'}</span>
+                    </>
+                  )}
+                </button>
+              ) : null}
+
+              {isEditMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsEditMode(false);
+                    checkExistingProfile();
+                  }}
+                  className="w-full mt-3 py-3 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </form>
         </div>
