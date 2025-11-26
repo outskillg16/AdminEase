@@ -170,6 +170,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'Call Management') navigate('/call-management');
     if (tab === 'Appointments') navigate('/appointments');
+    if (tab === 'Documents') navigate('/documents');
   };
 
   const formatDateTime = (dateString: string) => {

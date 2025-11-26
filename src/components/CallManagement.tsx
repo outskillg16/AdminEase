@@ -225,6 +225,8 @@ export default function CallManagement({ user, onLogout }: CallManagementProps) 
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'Call Management') navigate('/call-management');
+    if (tab === 'Appointments') navigate('/appointments');
+    if (tab === 'Documents') navigate('/documents');
   };
 
   const paginatedCalls = filteredCalls.slice(
