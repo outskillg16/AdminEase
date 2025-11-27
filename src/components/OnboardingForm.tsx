@@ -689,12 +689,19 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                         <option>No services added yet</option>
                       ) : (
                         <>
-                          <option value="">Select a service...</option>
-                          {formData.servicesOffered.map((service, index) => (
-                            <option key={index} value={service}>
-                              {service}
-                            </option>
-                          ))}
+                          {/* In view mode, show all services as one option. In edit mode, show selectable list */}
+                          {!isEditMode && success ? (
+                            <option value="">{formData.servicesOffered.join(', ')}</option>
+                          ) : (
+                            <>
+                              <option value="">Select a service...</option>
+                              {formData.servicesOffered.map((service, index) => (
+                                <option key={index} value={service}>
+                                  {service}
+                                </option>
+                              ))}
+                            </>
+                          )}
                         </>
                       )}
                     </select>
