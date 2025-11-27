@@ -38,11 +38,14 @@ interface AppointmentsProps {
 interface Appointment {
   id: string;
   appointment_id: string;
+  first_name: string;
+  last_name: string;
   customer_name: string;
   customer_email?: string;
   customer_phone?: string;
   service_type: 'consultation' | 'review' | 'demo' | 'other';
   appointment_date: string;
+  appointment_time: string;
   duration_minutes: number;
   status: 'scheduled' | 'completed' | 'rescheduled' | 'canceled' | 'no_show';
   location_type: 'virtual' | 'in_person' | 'phone';
@@ -619,7 +622,8 @@ function EmptyState() {
 // Due to length, I'll create placeholder functions for the modals that can be implemented
 function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
   const [formData, setFormData] = useState({
-    customerName: '',
+    firstName: '',
+    lastName: '',
     customerEmail: '',
     customerPhone: '',
     serviceType: 'consultation',
@@ -654,11 +658,13 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
         .insert({
           user_id: user.id,
           business_profile_id: profile?.id,
-          customer_name: formData.customerName,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
           customer_email: formData.customerEmail || null,
           customer_phone: formData.customerPhone || null,
           service_type: formData.serviceType,
           appointment_date: appointmentDateTime.toISOString(),
+          appointment_time: formData.appointmentTime,
           duration_minutes: formData.durationMinutes,
           location_type: formData.locationType,
           location_details: formData.locationDetails || null,
@@ -685,17 +691,31 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Customer Name <span className="text-red-500">*</span>
+                First Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
-                value={formData.customerName}
-                onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                placeholder="John Doe"
+                placeholder="John"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                placeholder="Doe"
               />
             </div>
 
@@ -1034,6 +1054,7 @@ function RescheduleModal({ appointment, onClose, onSuccess, setError }: any) {
         .from('appointments')
         .update({
           appointment_date: newDateTime.toISOString(),
+          appointment_time: newTime,
           status: 'rescheduled',
         })
         .eq('id', appointment.id);
