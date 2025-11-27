@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Edit,
+  Plus,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -37,6 +38,7 @@ interface FormData {
   email: string;
   phoneNumber: string;
   industry: string;
+  servicesOffered: string[];
   addressNumber: string;
   streetName: string;
   city: string;
@@ -130,6 +132,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     email: user.email,
     phoneNumber: '',
     industry: '',
+    servicesOffered: [],
     addressNumber: '',
     streetName: '',
     city: '',
@@ -141,6 +144,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showSuccessScreen, setShowSuccessScreen] = useState(false);
+  const [newServiceType, setNewServiceType] = useState('');
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -185,6 +189,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
           email: data.email,
           phoneNumber: data.phone_number,
           industry: data.industry,
+          servicesOffered: data.services_offered || [],
           addressNumber: data.address_number || '',
           streetName: data.street_name || '',
           city: data.city || '',
@@ -262,6 +267,51 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     setError(null);
   };
 
+  const handleAddServiceType = () => {
+    const trimmedService = newServiceType.trim();
+
+    if (!trimmedService) {
+      setError('Please enter a service type');
+      return;
+    }
+
+    // Validate letters only (allow spaces between words)
+    const lettersOnlyRegex = /^[a-zA-Z\s]+$/;
+    if (!lettersOnlyRegex.test(trimmedService)) {
+      setError('Service type can only contain letters and spaces');
+      return;
+    }
+
+    // Check for duplicates (case-insensitive)
+    if (formData.servicesOffered.some(s => s.toLowerCase() === trimmedService.toLowerCase())) {
+      setError('This service type already exists');
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      servicesOffered: [...prev.servicesOffered, trimmedService]
+    }));
+    setNewServiceType('');
+    setError(null);
+  };
+
+  const handleRemoveServiceType = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      servicesOffered: prev.servicesOffered.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleServiceTypeInputChange = (value: string) => {
+    // Only allow letters and spaces
+    const lettersOnlyRegex = /^[a-zA-Z\s]*$/;
+    if (lettersOnlyRegex.test(value)) {
+      setNewServiceType(value);
+      setError(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -278,6 +328,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
         email: formData.email,
         phone_number: formData.phoneNumber,
         industry: formData.industry,
+        services_offered: formData.servicesOffered,
         address_number: formData.addressNumber,
         street_name: formData.streetName,
         city: formData.city,
@@ -588,6 +639,86 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* Add Service Type */}
+                <div>
+                  <label htmlFor="addServiceType" className="block text-sm font-medium text-gray-700 mb-2">
+                    Add Service Type
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      id="addServiceType"
+                      type="text"
+                      value={newServiceType}
+                      onChange={(e) => handleServiceTypeInputChange(e.target.value)}
+                      disabled={!isEditMode && success}
+                      className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
+                      placeholder="Enter service type (letters only)"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddServiceType();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddServiceType}
+                      disabled={!isEditMode && success}
+                      className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>ADD</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Services Offered */}
+                <div>
+                  <label htmlFor="servicesOffered" className="block text-sm font-medium text-gray-700 mb-2">
+                    Services Offered
+                  </label>
+                  <select
+                    id="servicesOffered"
+                    multiple
+                    value={formData.servicesOffered}
+                    disabled={!isEditMode && success}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
+                    size={Math.min(Math.max(formData.servicesOffered.length, 3), 8)}
+                  >
+                    {formData.servicesOffered.length === 0 ? (
+                      <option disabled>No services added yet</option>
+                    ) : (
+                      formData.servicesOffered.map((service, index) => (
+                        <option key={index} value={service}>
+                          {service}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  {formData.servicesOffered.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {formData.servicesOffered.map((service, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm"
+                        >
+                          <span>{service}</span>
+                          {(isEditMode || !success) && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveServiceType(index)}
+                              className="ml-1 hover:text-cyan-900 transition"
+                              title="Remove service"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
