@@ -699,7 +699,8 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                       )}
                     </select>
                   </div>
-                  {formData.servicesOffered.length > 0 && (
+                  {/* Only show service tags in EDIT mode */}
+                  {(isEditMode || !success) && formData.servicesOffered.length > 0 && (
                     <div className="mt-3 flex flex-wrap gap-2">
                       {formData.servicesOffered.map((service, index) => (
                         <div
@@ -707,16 +708,14 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                           className="flex items-center gap-1 px-3 py-1.5 bg-cyan-100 text-cyan-700 rounded-md text-sm font-medium"
                         >
                           <span>{service}</span>
-                          {(isEditMode || !success) && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveServiceType(index)}
-                              className="ml-1 hover:text-cyan-900 transition"
-                              title="Remove service"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveServiceType(index)}
+                            className="ml-1 hover:text-cyan-900 transition"
+                            title="Remove service"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       ))}
                     </div>
