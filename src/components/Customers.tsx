@@ -15,6 +15,8 @@ import {
   MapPin,
   UserCircle,
   PawPrint,
+  Edit,
+  Trash2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -58,10 +60,17 @@ export default function Customers({ user, onLogout }: CustomersProps) {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('Customers');
   const [showAddModal, setShowAddModal] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerPets, setCustomerPets] = useState<{ [key: string]: Pet[] }>({});
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -80,7 +89,48 @@ export default function Customers({ user, onLogout }: CustomersProps) {
 
   useEffect(() => {
     document.title = 'Customers - AdminEase';
+    loadCustomers();
   }, []);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (customersError) throw customersError;
+
+      setCustomers(customersData || []);
+
+      if (customersData && customersData.length > 0) {
+        const customerIds = customersData.map(c => c.id);
+        const { data: petsData, error: petsError } = await supabase
+          .from('pets')
+          .select('*')
+          .in('customer_id', customerIds);
+
+        if (petsError) throw petsError;
+
+        const petsByCustomer: { [key: string]: Pet[] } = {};
+        petsData?.forEach(pet => {
+          if (!petsByCustomer[pet.customer_id]) {
+            petsByCustomer[pet.customer_id] = [];
+          }
+          petsByCustomer[pet.customer_id].push(pet);
+        });
+
+        setCustomerPets(petsByCustomer);
+      }
+    } catch (err: any) {
+      console.error('Error loading customers:', err);
+      setError('Failed to load customers');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const newPetsCount = formData.numberOfPets;
@@ -215,12 +265,140 @@ export default function Customers({ user, onLogout }: CustomersProps) {
       });
       setPets([{ pet_type: '', pet_name: '' }]);
       setShowAddModal(false);
+      loadCustomers();
 
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to add customer. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEdit = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    const customerPetsData = customerPets[customer.id] || [];
+    setFormData({
+      firstName: customer.first_name,
+      lastName: customer.last_name,
+      phone: customer.phone,
+      email: customer.email,
+      pointOfContact: customer.point_of_contact || '',
+      address: customer.address || '',
+      numberOfPets: customerPetsData.length || 1,
+    });
+    setPets(customerPetsData.map(pet => ({
+      pet_type: pet.pet_type,
+      pet_name: pet.pet_name,
+    })));
+    setShowEditModal(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!validateForm() || !selectedCustomer) {
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const { error: customerError } = await supabase
+        .from('customers')
+        .update({
+          first_name: formData.firstName.trim(),
+          last_name: formData.lastName.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          point_of_contact: formData.pointOfContact.trim() || null,
+          address: formData.address.trim() || null,
+        })
+        .eq('id', selectedCustomer.id);
+
+      if (customerError) {
+        if (customerError.code === '23505') {
+          if (customerError.message.includes('phone')) {
+            throw new Error('A customer with this phone number already exists');
+          } else if (customerError.message.includes('email')) {
+            throw new Error('A customer with this email already exists');
+          }
+        }
+        throw customerError;
+      }
+
+      const { error: deletePetsError } = await supabase
+        .from('pets')
+        .delete()
+        .eq('customer_id', selectedCustomer.id);
+
+      if (deletePetsError) throw deletePetsError;
+
+      const petsToInsert = pets.map(pet => ({
+        customer_id: selectedCustomer.id,
+        pet_type: pet.pet_type,
+        pet_name: pet.pet_name.trim(),
+      }));
+
+      const { error: petsError } = await supabase
+        .from('pets')
+        .insert(petsToInsert);
+
+      if (petsError) throw petsError;
+
+      setSuccess('Customer updated successfully!');
+      setFormData({
+        firstName: '',
+        lastName: '',
+        phone: '',
+        email: '',
+        pointOfContact: '',
+        address: '',
+        numberOfPets: 1,
+      });
+      setPets([{ pet_type: '', pet_name: '' }]);
+      setShowEditModal(false);
+      setSelectedCustomer(null);
+      loadCustomers();
+
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update customer. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteClick = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setShowDeleteModal(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedCustomer) return;
+
+    setDeleting(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .delete()
+        .eq('id', selectedCustomer.id);
+
+      if (error) throw error;
+
+      setSuccess('Customer deleted successfully!');
+      setShowDeleteModal(false);
+      setSelectedCustomer(null);
+      loadCustomers();
+
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete customer. Please try again.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -358,20 +536,104 @@ export default function Customers({ user, onLogout }: CustomersProps) {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-md p-8 text-center border border-gray-100">
-          <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-cyan-600" />
+        {loading ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center border border-gray-100">
+            <Loader2 className="w-12 h-12 text-cyan-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading customers...</p>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers yet</h3>
-          <p className="text-gray-600 mb-4">Get started by adding your first customer</p>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition inline-flex items-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Customer</span>
-          </button>
-        </div>
+        ) : customers.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-md p-8 text-center border border-gray-100">
+            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 text-cyan-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers yet</h3>
+            <p className="text-gray-600 mb-4">Get started by adding your first customer</p>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition inline-flex items-center space-x-2"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Customer</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {customers.map((customer) => {
+              const pets = customerPets[customer.id] || [];
+              return (
+                <div key={customer.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          {customer.first_name} {customer.last_name}
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center text-gray-600">
+                            <Phone className="w-4 h-4 mr-2 text-cyan-600" />
+                            <span>{customer.phone}</span>
+                          </div>
+                          <div className="flex items-center text-gray-600">
+                            <Mail className="w-4 h-4 mr-2 text-cyan-600" />
+                            <span className="truncate">{customer.email}</span>
+                          </div>
+                          {customer.address && (
+                            <div className="flex items-start text-gray-600">
+                              <MapPin className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0 mt-0.5" />
+                              <span className="line-clamp-2">{customer.address}</span>
+                            </div>
+                          )}
+                          {customer.point_of_contact && (
+                            <div className="flex items-center text-gray-600">
+                              <UserCircle className="w-4 h-4 mr-2 text-cyan-600" />
+                              <span>Contact: {customer.point_of_contact}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {pets.length > 0 && (
+                      <div className="mb-4 pt-4 border-t border-gray-100">
+                        <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          <PawPrint className="w-4 h-4 mr-2 text-cyan-600" />
+                          <span>Pets ({pets.length})</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {pets.map((pet) => (
+                            <span
+                              key={pet.id}
+                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700"
+                            >
+                              {pet.pet_name} ({pet.pet_type})
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => handleEdit(customer)}
+                        className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center space-x-2"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(customer)}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center space-x-2"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </main>
 
       {showAddModal && (
@@ -574,6 +836,250 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900">Edit Customer</h2>
+              <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdate} className="p-6">
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <UserCircle className="w-5 h-5 text-cyan-600" />
+                  <span>Customer Information</span>
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="John"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Doe"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Customer Phone <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="tel"
+                        required
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                        placeholder="(555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email ID <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Point of Contact</label>
+                    <input
+                      type="text"
+                      value={formData.pointOfContact}
+                      onChange={(e) => setFormData({ ...formData, pointOfContact: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                      placeholder="Emergency contact name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Number of Pets <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      max="20"
+                      value={formData.numberOfPets}
+                      onChange={(e) => setFormData({ ...formData, numberOfPets: parseInt(e.target.value) || 1 })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <textarea
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        rows={3}
+                        maxLength={500}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                        placeholder="Full address (max 500 characters)"
+                      />
+                    </div>
+                    {formData.address && (
+                      <p className="text-xs text-gray-500 mt-1">{formData.address.length}/500 characters</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                  <PawPrint className="w-5 h-5 text-cyan-600" />
+                  <span>Pet Information</span>
+                </h3>
+                <div className="space-y-4">
+                  {pets.map((pet, index) => (
+                    <div key={index} className="bg-slate-50 rounded-lg p-4 border border-gray-200">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Pet {index + 1}</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Pet Type <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            required
+                            value={pet.pet_type}
+                            onChange={(e) => handlePetChange(index, 'pet_type', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white"
+                          >
+                            <option value="">Select pet type</option>
+                            <option value="Dog">Dog</option>
+                            <option value="Cat">Cat</option>
+                            <option value="Bird">Bird</option>
+                            <option value="Rabbit">Rabbit</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Pet Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={pet.pet_name}
+                            onChange={(e) => handlePetChange(index, 'pet_name', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                            placeholder="Pet name"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Updating Customer...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4" />
+                      <span>Update Customer</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && selectedCustomer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-red-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Delete Customer</h2>
+            <p className="text-gray-600 text-center mb-6">
+              Are you sure you want to delete <span className="font-semibold">{selectedCustomer.first_name} {selectedCustomer.last_name}</span>? This action cannot be undone and will also delete all associated pets.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
