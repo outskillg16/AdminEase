@@ -5,6 +5,7 @@ import AuthPage from './components/AuthPage';
 import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
+import AIAssistant from './components/AIAssistant';
 import CallManagement from './components/CallManagement';
 import Appointments from './components/Appointments';
 import Documents from './components/Documents';
@@ -101,6 +102,16 @@ function App() {
           element={
             user ? (
               <Documents user={user} onLogout={handleSignOut} />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          }
+        />
+        <Route
+          path="/ai-assistant"
+          element={
+            user ? (
+              <AIAssistant user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/auth" />
             )
