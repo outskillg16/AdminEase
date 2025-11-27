@@ -664,51 +664,51 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                               {customer.first_name[0]}{customer.last_name[0]}
                             </span>
                           </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-semibold text-gray-900">
+                          <div className="ml-3 min-w-0">
+                            <div className="text-sm font-semibold text-gray-900 break-words">
                               {customer.first_name} {customer.last_name}
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="col-span-2">
+                      <div className="col-span-2 min-w-0">
                         <div className="flex items-center text-sm text-gray-700">
                           <Phone className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
-                          <span>{customer.phone}</span>
+                          <span className="break-words">{customer.phone}</span>
                         </div>
                       </div>
 
-                      <div className="col-span-2">
+                      <div className="col-span-2 min-w-0">
                         <div className="flex items-center text-sm text-gray-700">
                           <Mail className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
-                          <span className="truncate">{customer.email}</span>
+                          <span className="break-all">{customer.email}</span>
                         </div>
                       </div>
 
-                      <div className="col-span-2">
+                      <div className="col-span-2 min-w-0">
                         {customer.address ? (
                           <div className="flex items-start text-sm text-gray-700">
                             <MapPin className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0 mt-0.5" />
-                            <span className="line-clamp-2">{customer.address}</span>
+                            <span className="break-words">{customer.address}</span>
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
                         )}
                       </div>
 
-                      <div className="col-span-1">
+                      <div className="col-span-1 min-w-0">
                         {customer.point_of_contact ? (
                           <div className="flex items-center text-sm text-gray-700">
                             <UserCircle className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
-                            <span className="truncate">{customer.point_of_contact}</span>
+                            <span className="break-words">{customer.point_of_contact}</span>
                           </div>
                         ) : (
                           <span className="text-sm text-gray-400">-</span>
                         )}
                       </div>
 
-                      <div className="col-span-2">
+                      <div className="col-span-2 min-w-0">
                         {pets.length > 0 ? (
                           <div className="flex flex-wrap gap-1.5">
                             {pets.map((pet) => (
@@ -717,8 +717,8 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                                 className="inline-flex items-center text-xs font-medium text-cyan-700"
                                 title={`${pet.pet_name} (${pet.pet_type})`}
                               >
-                                <PawPrint className="w-3.5 h-3.5 mr-1" />
-                                <span>{pet.pet_name}</span>
+                                <PawPrint className="w-3.5 h-3.5 mr-1 flex-shrink-0" />
+                                <span className="break-words">{pet.pet_name}</span>
                               </div>
                             ))}
                           </div>
@@ -730,19 +730,17 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                       <div className="col-span-1 flex items-center justify-center gap-2">
                         <button
                           onClick={() => handleEdit(customer)}
-                          className="inline-flex items-center px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition"
+                          className="p-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition"
                           title="Edit customer"
                         >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteClick(customer)}
-                          className="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                          className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
                           title="Delete customer"
                         >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
