@@ -10,6 +10,7 @@ import {
   Volume2,
   VolumeX,
   Zap,
+  Trash2,
 } from 'lucide-react';
 import MessageList, { Message } from './ai-assistant/MessageList';
 import InputControls from './ai-assistant/InputControls';
@@ -88,7 +89,15 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
   };
 
   const shouldCallWebhook = (category: string): boolean => {
-    return ['SCHEDULE_VIEW', 'BOOKING_MANAGEMENT', 'TIME_BLOCKING'].includes(category);
+    return true;
+  };
+
+  const handleClearChat = () => {
+    if (messages.length > 0) {
+      if (window.confirm('Are you sure you want to clear all messages?')) {
+        setMessages([]);
+      }
+    }
   };
 
   const formatSuccessResponse = (response: any): string => {
@@ -351,6 +360,14 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-xs text-gray-600">Online</span>
               </div>
+              <button
+                onClick={handleClearChat}
+                disabled={messages.length === 0}
+                className="p-2 hover:bg-gray-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Clear chat"
+              >
+                <Trash2 className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
           </div>
 
