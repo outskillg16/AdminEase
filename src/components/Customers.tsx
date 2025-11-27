@@ -565,42 +565,45 @@ export default function Customers({ user, onLogout }: CustomersProps) {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
-            <p className="text-gray-600">Add and manage your customers and their pets</p>
-          </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center space-x-2"
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Customer</span>
-          </button>
-        </div>
+        <div className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 mb-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="flex-shrink-0">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Management</h1>
+              <p className="text-gray-600">Add and manage your customers and their pets</p>
+            </div>
 
-        {customers.length > 0 && (
-          <div className="mb-6">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by name, email, phone, address, or contact..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white shadow-sm"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+              {customers.length > 0 && (
+                <div className="relative flex-grow sm:flex-grow-0 sm:w-96">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by name, email, phone, address, or contact..."
+                    className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-white"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
               )}
+
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center space-x-2 whitespace-nowrap"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Add Customer</span>
+              </button>
             </div>
           </div>
-        )}
+        </div>
 
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
@@ -636,132 +639,120 @@ export default function Customers({ user, onLogout }: CustomersProps) {
             </button>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-cyan-50 to-blue-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Phone
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Address
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Contact
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Pets
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {getPaginatedCustomers().map((customer) => {
-                    const pets = customerPets[customer.id] || [];
-                    return (
-                      <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full flex items-center justify-center">
-                              <span className="text-white font-semibold text-sm">
-                                {customer.first_name[0]}{customer.last_name[0]}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-semibold text-gray-900">
-                                {customer.first_name} {customer.last_name}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Phone className="w-4 h-4 mr-2 text-cyan-600" />
-                            {customer.phone}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Mail className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
-                            <span className="truncate max-w-xs">{customer.email}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {customer.address ? (
-                            <div className="flex items-start text-sm text-gray-600">
-                              <MapPin className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0 mt-0.5" />
-                              <span className="line-clamp-2 max-w-xs">{customer.address}</span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {customer.point_of_contact ? (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <UserCircle className="w-4 h-4 mr-2 text-cyan-600" />
-                              <span className="truncate max-w-xs">{customer.point_of_contact}</span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {pets.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {pets.map((pet) => (
-                                <span
-                                  key={pet.id}
-                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700"
-                                  title={`${pet.pet_name} (${pet.pet_type})`}
-                                >
-                                  <PawPrint className="w-3 h-3 mr-1" />
-                                  {pet.pet_name}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-sm text-gray-400">No pets</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleEdit(customer)}
-                              className="inline-flex items-center px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition"
-                              title="Edit customer"
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(customer)}
-                              className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
-                              title="Delete customer"
-                            >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+          <div className="space-y-3">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-3">
+              <div className="grid grid-cols-12 gap-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <div className="col-span-2">Name</div>
+                <div className="col-span-2">Phone</div>
+                <div className="col-span-2">Email</div>
+                <div className="col-span-2">Address</div>
+                <div className="col-span-1">Contact</div>
+                <div className="col-span-2">Pets</div>
+                <div className="col-span-1 text-center">Actions</div>
+              </div>
             </div>
+            {getPaginatedCustomers().map((customer) => {
+              const pets = customerPets[customer.id] || [];
+              return (
+                <div key={customer.id} className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                  <div className="px-6 py-5">
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      <div className="col-span-2">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">
+                              {customer.first_name[0]}{customer.last_name[0]}
+                            </span>
+                          </div>
+                          <div className="ml-3">
+                            <div className="text-sm font-semibold text-gray-900">
+                              {customer.first_name} {customer.last_name}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="col-span-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Phone className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
+                          <span>{customer.phone}</span>
+                        </div>
+                      </div>
+
+                      <div className="col-span-2">
+                        <div className="flex items-center text-sm text-gray-700">
+                          <Mail className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
+                          <span className="truncate">{customer.email}</span>
+                        </div>
+                      </div>
+
+                      <div className="col-span-2">
+                        {customer.address ? (
+                          <div className="flex items-start text-sm text-gray-700">
+                            <MapPin className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{customer.address}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </div>
+
+                      <div className="col-span-1">
+                        {customer.point_of_contact ? (
+                          <div className="flex items-center text-sm text-gray-700">
+                            <UserCircle className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
+                            <span className="truncate">{customer.point_of_contact}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </div>
+
+                      <div className="col-span-2">
+                        {pets.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {pets.map((pet) => (
+                              <div
+                                key={pet.id}
+                                className="inline-flex items-center text-xs font-medium text-cyan-700"
+                                title={`${pet.pet_name} (${pet.pet_type})`}
+                              >
+                                <PawPrint className="w-3.5 h-3.5 mr-1" />
+                                <span>{pet.pet_name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </div>
+
+                      <div className="col-span-1 flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(customer)}
+                          className="inline-flex items-center px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition"
+                          title="Edit customer"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(customer)}
+                          className="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                          title="Delete customer"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
 
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <div className="mt-6 px-6 py-4 bg-white rounded-lg shadow-sm border border-gray-200 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} customers
                 </div>
