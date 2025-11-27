@@ -189,7 +189,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center space-x-1">
-              {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+              {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => {
@@ -211,6 +211,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                     }
                     if (tab === 'Documents') {
                       navigate('/documents');
+                    }
+                    if (tab === 'Customers') {
+                      navigate('/customers');
                     }
                   }}
                   className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
@@ -292,7 +295,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           {showMobileMenu && (
             <div className="md:hidden border-t border-gray-200 py-3 animate-fade-in">
               <nav className="flex flex-col space-y-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -315,6 +318,9 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       }
                       if (tab === 'Documents') {
                         navigate('/documents');
+                      }
+                      if (tab === 'Customers') {
+                        navigate('/customers');
                       }
                     }}
                     className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 ${

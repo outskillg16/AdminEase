@@ -77,6 +77,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     if (tab === 'Call Management') navigate('/call-management');
     if (tab === 'Appointments') navigate('/appointments');
     if (tab === 'Documents') navigate('/documents');
+    if (tab === 'Customers') navigate('/customers');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
   };
 
@@ -189,7 +190,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     setVoiceEnabled(!voiceEnabled);
   };
 
-  const menuTabs = ['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents'];
+  const menuTabs = ['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">

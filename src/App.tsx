@@ -9,6 +9,7 @@ import AIAssistant from './components/AIAssistant';
 import CallManagement from './components/CallManagement';
 import Appointments from './components/Appointments';
 import Documents from './components/Documents';
+import Customers from './components/Customers';
 import { supabase } from './lib/supabase';
 
 function App() {
@@ -112,6 +113,16 @@ function App() {
           element={
             user ? (
               <AIAssistant user={user} onLogout={handleSignOut} />
+            ) : (
+              <Navigate to="/auth" />
+            )
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            user ? (
+              <Customers user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/auth" />
             )
