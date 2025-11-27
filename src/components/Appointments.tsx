@@ -626,7 +626,7 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     lastName: '',
     customerEmail: '',
     customerPhone: '',
-    serviceType: 'consultation',
+    serviceTypes: [] as string[],
     appointmentDate: '',
     appointmentTime: '',
     durationMinutes: 60,
@@ -634,9 +634,68 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     locationDetails: '',
   });
   const [saving, setSaving] = useState(false);
+  const [availableServices, setAvailableServices] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadServicesOffered();
+
+    // Subscribe to changes in business_profiles
+    const subscription = supabase
+      .channel('business_profiles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'business_profiles',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          loadServicesOffered();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [user.id]);
+
+  const loadServicesOffered = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('business_profiles')
+        .select('services_offered')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data?.services_offered && Array.isArray(data.services_offered)) {
+        setAvailableServices(data.services_offered);
+      }
+    } catch (err) {
+      console.error('Error loading services:', err);
+    }
+  };
+
+  const handleServiceToggle = (service: string) => {
+    setFormData(prev => ({
+      ...prev,
+      serviceTypes: prev.serviceTypes.includes(service)
+        ? prev.serviceTypes.filter(s => s !== service)
+        : [...prev.serviceTypes, service]
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.serviceTypes.length === 0) {
+      setError('Please select at least one service type');
+      return;
+    }
+
     setSaving(true);
     setError(null);
 
@@ -662,7 +721,7 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
           last_name: formData.lastName,
           customer_email: formData.customerEmail || null,
           customer_phone: formData.customerPhone || null,
-          service_type: formData.serviceType,
+          service_type: formData.serviceTypes.join(', '),
           appointment_date: appointmentDateTime.toISOString(),
           appointment_time: formData.appointmentTime,
           duration_minutes: formData.durationMinutes,
@@ -741,18 +800,41 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
-              <select
-                value={formData.serviceType}
-                onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-              >
-                <option value="consultation">Consultation</option>
-                <option value="review">Review</option>
-                <option value="demo">Demo</option>
-                <option value="other">Other</option>
-              </select>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Service Type <span className="text-red-500">*</span>
+              </label>
+              {availableServices.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-800">
+                  No services configured. Please add services in your business profile first.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {availableServices.map((service) => (
+                    <label
+                      key={service}
+                      className={`flex items-center space-x-2 px-4 py-3 border-2 rounded-lg cursor-pointer transition ${
+                        formData.serviceTypes.includes(service)
+                          ? 'border-cyan-500 bg-cyan-50'
+                          : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.serviceTypes.includes(service)}
+                        onChange={() => handleServiceToggle(service)}
+                        className="w-4 h-4 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500"
+                      />
+                      <span className="text-sm font-medium text-gray-900">{service}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {formData.serviceTypes.length > 0 && (
+                <p className="mt-2 text-sm text-gray-600">
+                  Selected: {formData.serviceTypes.join(', ')}
+                </p>
+              )}
             </div>
 
             <div>
