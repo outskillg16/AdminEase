@@ -679,30 +679,32 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                   <label htmlFor="servicesOffered" className="block text-sm font-medium text-gray-700 mb-2">
                     Services Offered
                   </label>
-                  <select
-                    id="servicesOffered"
-                    multiple
-                    value={formData.servicesOffered}
-                    disabled={!isEditMode && success}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm disabled:bg-gray-50 disabled:text-gray-500"
-                    size={Math.min(Math.max(formData.servicesOffered.length, 3), 8)}
-                  >
-                    {formData.servicesOffered.length === 0 ? (
-                      <option disabled>No services added yet</option>
-                    ) : (
-                      formData.servicesOffered.map((service, index) => (
-                        <option key={index} value={service}>
-                          {service}
-                        </option>
-                      ))
-                    )}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="servicesOffered"
+                      disabled={!isEditMode && success}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition text-sm appearance-none disabled:bg-gray-50 disabled:text-gray-500"
+                    >
+                      {formData.servicesOffered.length === 0 ? (
+                        <option>No services added yet</option>
+                      ) : (
+                        <>
+                          <option value="">Select a service...</option>
+                          {formData.servicesOffered.map((service, index) => (
+                            <option key={index} value={service}>
+                              {service}
+                            </option>
+                          ))}
+                        </>
+                      )}
+                    </select>
+                  </div>
                   {formData.servicesOffered.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {formData.servicesOffered.map((service, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-1 px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-sm"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-cyan-100 text-cyan-700 rounded-md text-sm font-medium"
                         >
                           <span>{service}</span>
                           {(isEditMode || !success) && (
@@ -712,7 +714,7 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                               className="ml-1 hover:text-cyan-900 transition"
                               title="Remove service"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-3.5 h-3.5" />
                             </button>
                           )}
                         </div>
