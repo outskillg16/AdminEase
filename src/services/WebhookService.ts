@@ -52,6 +52,9 @@ export async function sendToN8nWebhook(
       sessionId: generateSessionId()
     };
 
+    console.log('🚀 Calling n8n webhook:', WEBHOOK_URL);
+    console.log('📦 Payload:', payload);
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -71,6 +74,8 @@ export async function sendToN8nWebhook(
     }
 
     const data = await response.json();
+
+    console.log('✅ Webhook response received:', data);
 
     return {
       success: true,
@@ -105,7 +110,9 @@ export function classifyIntent(userInput: string): IntentClassification {
     /do\s+i\s+have\s+(any\s+)?(appointments|bookings)/i,
     /(daily|weekly|monthly)\s+(briefing|overview|schedule)/i,
     /how\s+many\s+appointments/i,
-    /view\s+(my\s+)?(schedule|calendar)/i
+    /view\s+(my\s+)?(schedule|calendar)/i,
+    /day\s+at\s+a\s+glance/i,
+    /(today|tomorrow)'?s?\s+(overview|summary|agenda)/i
   ];
 
   const bookingPatterns = [

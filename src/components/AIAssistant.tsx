@@ -88,10 +88,6 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     setMessages((prev) => prev.filter((msg) => msg.id !== id));
   };
 
-  const shouldCallWebhook = (category: string): boolean => {
-    return true;
-  };
-
   const handleClearChat = () => {
     if (messages.length > 0) {
       if (window.confirm('Are you sure you want to clear all messages?')) {
@@ -118,16 +114,6 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     return response.message;
   };
 
-  const getFallbackResponse = (category: string): string => {
-    const fallbackResponses = {
-      SCHEDULE_VIEW: "I can help you view your schedule. Try asking: 'What's my schedule today?' or 'Show me next week's appointments'",
-      BOOKING_MANAGEMENT: "I can help you manage bookings. Try: 'Book [customer] for [service] at [time]' or 'Cancel [customer]'s appointment'",
-      TIME_BLOCKING: "I can help block time. Try: 'Block out [date] for vacation' or 'Set lunch break from 12-1pm daily'",
-      GENERAL_QUERY: "I'm your scheduling assistant. I can help you view your calendar, book appointments, or block time. What would you like to do?"
-    };
-    return fallbackResponses[category as keyof typeof fallbackResponses] || fallbackResponses.GENERAL_QUERY;
-  };
-
   const handleSendMessage = async (userInput: string) => {
     if (!userInput.trim() || isProcessing) return;
 
@@ -150,53 +136,28 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     try {
       const intent = classifyIntent(userInput);
 
-      if (intent.confidence < 0.6) {
-        removeMessage(loadingId);
-        const response = "I'm not quite sure what you're asking for. Could you please rephrase? For example: 'What's my schedule today?' or 'Book John for lawn service tomorrow at 2pm'";
+      const webhookResponse = await sendToN8nWebhook(intent, userInput);
+      removeMessage(loadingId);
+
+      if (webhookResponse.success) {
+        const response = formatSuccessResponse(webhookResponse);
         addMessage({
           id: generateMessageId(),
           role: 'assistant',
           content: response,
-          timestamp: new Date()
+          timestamp: new Date(),
+          data: webhookResponse.data
         });
         if (voiceEnabled) speak(response);
-        return;
-      }
-
-      if (shouldCallWebhook(intent.category)) {
-        const webhookResponse = await sendToN8nWebhook(intent, userInput);
-        removeMessage(loadingId);
-
-        if (webhookResponse.success) {
-          const response = formatSuccessResponse(webhookResponse);
-          addMessage({
-            id: generateMessageId(),
-            role: 'assistant',
-            content: response,
-            timestamp: new Date(),
-            data: webhookResponse.data
-          });
-          if (voiceEnabled) speak(response);
-        } else {
-          const errorResponse = `I encountered an issue: ${webhookResponse.message}. Please try again or rephrase your request.`;
-          addMessage({
-            id: generateMessageId(),
-            role: 'assistant',
-            content: errorResponse,
-            timestamp: new Date()
-          });
-          if (voiceEnabled) speak(errorResponse);
-        }
       } else {
-        removeMessage(loadingId);
-        const response = getFallbackResponse(intent.category);
+        const errorResponse = `I encountered an issue: ${webhookResponse.message}. Please try again or rephrase your request.`;
         addMessage({
           id: generateMessageId(),
           role: 'assistant',
-          content: response,
+          content: errorResponse,
           timestamp: new Date()
         });
-        if (voiceEnabled) speak(response);
+        if (voiceEnabled) speak(errorResponse);
       }
     } catch (error) {
       removeMessage(loadingId);
