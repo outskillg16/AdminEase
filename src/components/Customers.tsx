@@ -17,6 +17,9 @@ import {
   PawPrint,
   Edit,
   Trash2,
+  Search,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -69,8 +72,13 @@ export default function Customers({ user, onLogout }: CustomersProps) {
   const [deleting, setDeleting] = useState(false);
 
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerPets, setCustomerPets] = useState<{ [key: string]: Pet[] }>({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -92,6 +100,10 @@ export default function Customers({ user, onLogout }: CustomersProps) {
     loadCustomers();
   }, []);
 
+  useEffect(() => {
+    filterCustomers();
+  }, [searchQuery, customers]);
+
   const loadCustomers = async () => {
     try {
       setLoading(true);
@@ -104,6 +116,7 @@ export default function Customers({ user, onLogout }: CustomersProps) {
       if (customersError) throw customersError;
 
       setCustomers(customersData || []);
+      setTotalCount(customersData?.length || 0);
 
       if (customersData && customersData.length > 0) {
         const customerIds = customersData.map(c => c.id);
@@ -130,6 +143,49 @@ export default function Customers({ user, onLogout }: CustomersProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const filterCustomers = () => {
+    if (!searchQuery.trim()) {
+      setFilteredCustomers(customers);
+      setTotalCount(customers.length);
+      setCurrentPage(1);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = customers.filter(customer => {
+      const fullName = `${customer.first_name} ${customer.last_name}`.toLowerCase();
+      const email = customer.email.toLowerCase();
+      const phone = customer.phone.toLowerCase();
+      const address = customer.address?.toLowerCase() || '';
+      const contact = customer.point_of_contact?.toLowerCase() || '';
+
+      return (
+        fullName.includes(query) ||
+        email.includes(query) ||
+        phone.includes(query) ||
+        address.includes(query) ||
+        contact.includes(query)
+      );
+    });
+
+    setFilteredCustomers(filtered);
+    setTotalCount(filtered.length);
+    setCurrentPage(1);
+  };
+
+  const getPaginatedCustomers = () => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredCustomers.slice(startIndex, endIndex);
+  };
+
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -523,6 +579,29 @@ export default function Customers({ user, onLogout }: CustomersProps) {
           </button>
         </div>
 
+        {customers.length > 0 && (
+          <div className="mb-6">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name, email, phone, address, or contact..."
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-white shadow-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
             <p className="text-sm text-red-800">{error}</p>
@@ -586,7 +665,7 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {customers.map((customer) => {
+                  {getPaginatedCustomers().map((customer) => {
                     const pets = customerPets[customer.id] || [];
                     return (
                       <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
@@ -680,6 +759,58 @@ export default function Customers({ user, onLogout }: CustomersProps) {
                 </tbody>
               </table>
             </div>
+
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} customers
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+
+                  <div className="flex items-center space-x-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-4 py-2 rounded-lg font-medium transition ${
+                              currentPage === page
+                                ? 'bg-cyan-600 text-white'
+                                : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      } else if (page === currentPage - 2 || page === currentPage + 2) {
+                        return <span key={page} className="px-2 text-gray-400">...</span>;
+                      }
+                      return null;
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
