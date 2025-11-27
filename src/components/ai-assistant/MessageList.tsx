@@ -35,7 +35,6 @@ export default function MessageList({ messages }: MessageListProps) {
         </p>
         <div className="space-y-2 text-sm text-left bg-gray-50 rounded-lg p-4 max-w-md">
           <p className="text-gray-700">• "What's my schedule today?"</p>
-          <p className="text-gray-700">• "Book Sarah Johnson for lawn service tomorrow at 10am"</p>
           <p className="text-gray-700">• "Block out next Friday for vacation"</p>
         </div>
       </div>
