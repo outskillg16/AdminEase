@@ -557,81 +557,129 @@ export default function Customers({ user, onLogout }: CustomersProps) {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {customers.map((customer) => {
-              const pets = customerPets[customer.id] || [];
-              return (
-                <div key={customer.id} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {customer.first_name} {customer.last_name}
-                        </h3>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex items-center text-gray-600">
+          <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-cyan-50 to-blue-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Phone
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Address
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Contact
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Pets
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {customers.map((customer) => {
+                    const pets = customerPets[customer.id] || [];
+                    return (
+                      <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {customer.first_name[0]}{customer.last_name[0]}
+                              </span>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {customer.first_name} {customer.last_name}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center text-sm text-gray-600">
                             <Phone className="w-4 h-4 mr-2 text-cyan-600" />
-                            <span>{customer.phone}</span>
+                            {customer.phone}
                           </div>
-                          <div className="flex items-center text-gray-600">
-                            <Mail className="w-4 h-4 mr-2 text-cyan-600" />
-                            <span className="truncate">{customer.email}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <Mail className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0" />
+                            <span className="truncate max-w-xs">{customer.email}</span>
                           </div>
-                          {customer.address && (
-                            <div className="flex items-start text-gray-600">
+                        </td>
+                        <td className="px-6 py-4">
+                          {customer.address ? (
+                            <div className="flex items-start text-sm text-gray-600">
                               <MapPin className="w-4 h-4 mr-2 text-cyan-600 flex-shrink-0 mt-0.5" />
-                              <span className="line-clamp-2">{customer.address}</span>
+                              <span className="line-clamp-2 max-w-xs">{customer.address}</span>
                             </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
                           )}
-                          {customer.point_of_contact && (
-                            <div className="flex items-center text-gray-600">
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {customer.point_of_contact ? (
+                            <div className="flex items-center text-sm text-gray-600">
                               <UserCircle className="w-4 h-4 mr-2 text-cyan-600" />
-                              <span>Contact: {customer.point_of_contact}</span>
+                              <span className="truncate max-w-xs">{customer.point_of_contact}</span>
                             </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
                           )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {pets.length > 0 && (
-                      <div className="mb-4 pt-4 border-t border-gray-100">
-                        <div className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                          <PawPrint className="w-4 h-4 mr-2 text-cyan-600" />
-                          <span>Pets ({pets.length})</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {pets.map((pet) => (
-                            <span
-                              key={pet.id}
-                              className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700"
+                        </td>
+                        <td className="px-6 py-4">
+                          {pets.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {pets.map((pet) => (
+                                <span
+                                  key={pet.id}
+                                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-50 text-cyan-700"
+                                  title={`${pet.pet_name} (${pet.pet_type})`}
+                                >
+                                  <PawPrint className="w-3 h-3 mr-1" />
+                                  {pet.pet_name}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-gray-400">No pets</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleEdit(customer)}
+                              className="inline-flex items-center px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition"
+                              title="Edit customer"
                             >
-                              {pet.pet_name} ({pet.pet_type})
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2 pt-4 border-t border-gray-100">
-                      <button
-                        onClick={() => handleEdit(customer)}
-                        className="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center space-x-2"
-                      >
-                        <Edit className="w-4 h-4" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteClick(customer)}
-                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition flex items-center justify-center space-x-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Delete</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(customer)}
+                              className="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                              title="Delete customer"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>
