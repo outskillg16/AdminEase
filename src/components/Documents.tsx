@@ -124,6 +124,7 @@ export default function Documents({ user, onLogout }: DocumentsProps) {
     if (tab === 'Dashboard') navigate('/dashboard');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
+    if (tab === 'AI Assistant') navigate('/ai-assistant');
     if (tab === 'Call Management') navigate('/call-management');
     if (tab === 'Appointments') navigate('/appointments');
     if (tab === 'Documents') navigate('/documents');
@@ -361,7 +362,7 @@ export default function Documents({ user, onLogout }: DocumentsProps) {
             </button>
 
             <nav className="hidden md:flex items-center space-x-1">
-              {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+              {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => handleNavigate(tab)}
@@ -427,7 +428,7 @@ export default function Documents({ user, onLogout }: DocumentsProps) {
           {showMobileMenu && (
             <div className="md:hidden border-t border-gray-200 py-3">
               <nav className="flex flex-col space-y-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
+                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
