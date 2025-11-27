@@ -1,4 +1,4 @@
-const WEBHOOK_URL = 'https://n8n.srv1009698.hstgr.cloud/webhook/appointment-assistant';
+const WEBHOOK_URL = 'https://n8n.srv1009698.hstgr.cloud/webhook/appointment-webhook';
 
 export interface IntentClassification {
   category: 'SCHEDULE_VIEW' | 'BOOKING_MANAGEMENT' | 'TIME_BLOCKING' | 'GENERAL_QUERY';
