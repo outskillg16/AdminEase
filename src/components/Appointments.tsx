@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -21,6 +21,8 @@ import {
   Zap,
   Menu,
   Loader2,
+  PawPrint,
+  Mail,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -620,8 +622,9 @@ function EmptyState() {
   );
 }
 
-// Due to length, I'll create placeholder functions for the modals that can be implemented
+// Enhanced CreateAppointmentModal with Pet Details Integration
 function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
+  // Form data state
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -634,13 +637,28 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     locationType: 'virtual',
     locationDetails: '',
   });
+
+  // Customer lookup state
+  const [customerLookupStatus, setCustomerLookupStatus] = useState<'idle' | 'loading' | 'found' | 'multiple' | 'not-found' | 'error'>('idle');
+  const [existingCustomer, setExistingCustomer] = useState<any>(null);
+  const [customerMatches, setCustomerMatches] = useState<any[]>([]);
+  const [customerPets, setCustomerPets] = useState<any[]>([]);
+  const [selectedPetId, setSelectedPetId] = useState<string>('');
+
+  // New customer/pet state
+  const [isNewCustomer, setIsNewCustomer] = useState(false);
+  const [showNewPetSection, setShowNewPetSection] = useState(false);
+  const [numberOfPets, setNumberOfPets] = useState(1);
+  const [newPets, setNewPets] = useState<Array<{ pet_type: string; pet_name: string }>>([{ pet_type: '', pet_name: '' }]);
+
+  // Other state
   const [saving, setSaving] = useState(false);
   const [availableServices, setAvailableServices] = useState<string[]>([]);
 
+  // Load services offered on mount
   useEffect(() => {
     loadServicesOffered();
 
-    // Subscribe to changes in business_profiles
     const subscription = supabase
       .channel('business_profiles_changes')
       .on(
@@ -662,6 +680,17 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     };
   }, [user.id]);
 
+  // Customer lookup when both names are filled
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.firstName.trim() && formData.lastName.trim()) {
+        lookupCustomer(formData.firstName.trim(), formData.lastName.trim());
+      }
+    }, 500); // Debounce for 500ms
+
+    return () => clearTimeout(timer);
+  }, [formData.firstName, formData.lastName]);
+
   const loadServicesOffered = async () => {
     try {
       const { data, error } = await supabase
@@ -680,6 +709,123 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     }
   };
 
+  // Customer lookup function
+  const lookupCustomer = async (firstName: string, lastName: string) => {
+    if (!firstName || !lastName) return;
+
+    setCustomerLookupStatus('loading');
+
+    try {
+      const { data: customers, error } = await supabase
+        .from('customers')
+        .select('*')
+        .ilike('first_name', firstName)
+        .ilike('last_name', lastName)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      if (customers && customers.length > 0) {
+        if (customers.length === 1) {
+          // Single customer match
+          setExistingCustomer(customers[0]);
+          setFormData(prev => ({
+            ...prev,
+            customerEmail: customers[0].email || '',
+            customerPhone: customers[0].phone || ''
+          }));
+          await fetchCustomerPets(customers[0].id);
+          setCustomerLookupStatus('found');
+          setIsNewCustomer(false);
+        } else {
+          // Multiple matches
+          setCustomerMatches(customers);
+          setCustomerLookupStatus('multiple');
+        }
+      } else {
+        // No customer found - new customer mode
+        setCustomerLookupStatus('not-found');
+        setIsNewCustomer(true);
+        setExistingCustomer(null);
+        setCustomerPets([]);
+        setShowNewPetSection(true);
+      }
+    } catch (error) {
+      console.error('Customer lookup error:', error);
+      setCustomerLookupStatus('error');
+    }
+  };
+
+  // Fetch customer's pets
+  const fetchCustomerPets = async (customerId: string) => {
+    try {
+      const { data: pets, error } = await supabase
+        .from('pets')
+        .select('*')
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      setCustomerPets(pets || []);
+
+      // Auto-select if only one pet
+      if (pets && pets.length === 1) {
+        setSelectedPetId(pets[0].id);
+        setShowNewPetSection(false);
+      } else if (!pets || pets.length === 0) {
+        // Customer exists but has no pets
+        setShowNewPetSection(true);
+      } else {
+        setShowNewPetSection(false);
+      }
+    } catch (error) {
+      console.error('Error fetching pets:', error);
+      setCustomerPets([]);
+    }
+  };
+
+  // Handle customer selection from multiple matches
+  const handleSelectCustomer = async (customer: any) => {
+    setExistingCustomer(customer);
+    setFormData(prev => ({
+      ...prev,
+      customerEmail: customer.email || '',
+      customerPhone: customer.phone || ''
+    }));
+    await fetchCustomerPets(customer.id);
+    setCustomerLookupStatus('found');
+    setIsNewCustomer(false);
+    setCustomerMatches([]);
+  };
+
+  // Handle number of pets change
+  const handleNumberOfPetsChange = (value: number) => {
+    const numPets = Math.max(1, Math.min(10, value));
+    setNumberOfPets(numPets);
+
+    const currentPets = [...newPets];
+    if (numPets > currentPets.length) {
+      // Add more pet entries
+      const petsToAdd = numPets - currentPets.length;
+      for (let i = 0; i < petsToAdd; i++) {
+        currentPets.push({ pet_type: '', pet_name: '' });
+      }
+    } else if (numPets < currentPets.length) {
+      // Remove excess pet entries
+      currentPets.splice(numPets);
+    }
+
+    setNewPets(currentPets);
+  };
+
+  // Update individual pet data
+  const updatePetData = (index: number, field: 'pet_type' | 'pet_name', value: string) => {
+    const updatedPets = [...newPets];
+    updatedPets[index][field] = value;
+    setNewPets(updatedPets);
+  };
+
   const handleServiceToggle = (service: string) => {
     setFormData(prev => ({
       ...prev,
@@ -692,9 +838,38 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
     if (formData.serviceTypes.length === 0) {
       setError('Please select at least one service type');
       return;
+    }
+
+    // Validate pet selection for existing customers
+    if (!isNewCustomer && !showNewPetSection && !selectedPetId) {
+      setError('Please select a pet for this appointment');
+      return;
+    }
+
+    // Validate new pet data
+    if ((isNewCustomer || showNewPetSection) && newPets.length > 0) {
+      for (let i = 0; i < newPets.length; i++) {
+        if (!newPets[i].pet_type || !newPets[i].pet_name) {
+          setError(`Please complete pet ${i + 1} details (type and name required)`);
+          return;
+        }
+      }
+    }
+
+    // Validate email and phone for new customers
+    if (isNewCustomer) {
+      if (!formData.customerEmail) {
+        setError('Email is required for new customers');
+        return;
+      }
+      if (!formData.customerPhone) {
+        setError('Phone is required for new customers');
+        return;
+      }
     }
 
     setSaving(true);
@@ -707,31 +882,132 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
         throw new Error('Appointment date must be in the future');
       }
 
+      let finalCustomerId = existingCustomer?.id;
+      let finalPetId = selectedPetId;
+      const customerFirstName = formData.firstName;
+      const customerLastName = formData.lastName;
+      const customerEmail = formData.customerEmail;
+      const customerPhone = formData.customerPhone;
+
+      // SCENARIO A: New Customer - Create customer and pets first
+      if (isNewCustomer) {
+        // Check for duplicate email
+        const { data: existingByEmail } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('email', formData.customerEmail)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingByEmail) {
+          throw new Error('A customer with this email already exists');
+        }
+
+        // Insert new customer
+        const { data: newCustomer, error: customerError } = await supabase
+          .from('customers')
+          .insert({
+            user_id: user.id,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.customerEmail,
+            phone: formData.customerPhone,
+          })
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+        finalCustomerId = newCustomer.id;
+
+        // Insert all pets for this new customer
+        const petsToInsert = newPets.map(pet => ({
+          customer_id: finalCustomerId,
+          pet_type: pet.pet_type,
+          pet_name: pet.pet_name
+        }));
+
+        const { data: insertedPets, error: petsError } = await supabase
+          .from('pets')
+          .insert(petsToInsert)
+          .select();
+
+        if (petsError) throw petsError;
+
+        // Use first pet for this appointment
+        finalPetId = insertedPets[0].id;
+      }
+      // SCENARIO B: Existing customer adding new pet
+      else if (existingCustomer && showNewPetSection && newPets.length > 0) {
+        const petsToInsert = newPets.map(pet => ({
+          customer_id: existingCustomer.id,
+          pet_type: pet.pet_type,
+          pet_name: pet.pet_name
+        }));
+
+        const { data: insertedPets, error: petsError } = await supabase
+          .from('pets')
+          .insert(petsToInsert)
+          .select();
+
+        if (petsError) throw petsError;
+        finalPetId = insertedPets[0].id;
+      }
+
+      // Validate pet selection
+      if (!finalPetId) {
+        throw new Error('Please select a pet for this appointment');
+      }
+
+      // Generate appointment ID
+      const appointmentId = `APT-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+      // Get business profile
       const { data: profile } = await supabase
         .from('business_profiles')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
 
+      // Create appointment with BOTH normalized (IDs) and denormalized (text) data
       const { error: insertError } = await supabase
         .from('appointments')
         .insert({
+          // User and business references
           user_id: user.id,
           business_profile_id: profile?.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          customer_email: formData.customerEmail || null,
-          customer_phone: formData.customerPhone || null,
+          appointment_id: appointmentId,
+
+          // Foreign key references (NEW - normalized for relational queries)
+          customer_id: finalCustomerId,
+          pet_id: finalPetId,
+
+          // Denormalized customer data (EXISTING - for backward compatibility & performance)
+          customer_name: `${customerFirstName} ${customerLastName}`,
+          first_name: customerFirstName,
+          last_name: customerLastName,
+          customer_email: customerEmail || null,
+          customer_phone: customerPhone || null,
+
+          // Appointment details
           service_type: formData.serviceTypes.join(', '),
           appointment_date: appointmentDateTime.toISOString(),
           appointment_time: formData.appointmentTime,
           duration_minutes: formData.durationMinutes,
+          status: 'scheduled',
           location_type: formData.locationType,
           location_details: formData.locationDetails || null,
+          reminder_sent: false,
         });
 
       if (insertError) throw insertError;
+
+      // Success message
+      const successMessage = isNewCustomer
+        ? 'Customer, pets, and appointment created successfully!'
+        : 'Appointment created successfully!';
+
       onSuccess();
+      setError(null);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -780,27 +1056,218 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Email</label>
-              <input
-                type="email"
-                value={formData.customerEmail}
-                onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                placeholder="john@example.com"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Customer Email {isNewCustomer && <span className="text-red-500">*</span>}
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  required={isNewCustomer}
+                  value={formData.customerEmail}
+                  onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                  placeholder="john@example.com"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer Phone</label>
-              <input
-                type="tel"
-                value={formData.customerPhone}
-                onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
-                placeholder="+1 (555) 123-4567"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Customer Phone {isNewCustomer && <span className="text-red-500">*</span>}
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  required={isNewCustomer}
+                  value={formData.customerPhone}
+                  onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
             </div>
+          </div>
 
+          {/* Customer Lookup Status Indicator */}
+          {customerLookupStatus !== 'idle' && (
+            <div className="mb-4">
+              {customerLookupStatus === 'loading' && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Looking up customer...
+                </div>
+              )}
+
+              {customerLookupStatus === 'found' && (
+                <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 p-3 rounded-lg border border-green-200">
+                  <CheckCircle className="w-4 h-4" />
+                  Customer found
+                </div>
+              )}
+
+              {customerLookupStatus === 'not-found' && (
+                <div className="flex items-center gap-2 text-sm text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <AlertCircle className="w-4 h-4" />
+                  New customer
+                </div>
+              )}
+
+              {customerLookupStatus === 'error' && (
+                <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
+                  <XCircle className="w-4 h-4" />
+                  Error looking up customer
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Multiple Customer Matches Selection */}
+          {customerLookupStatus === 'multiple' && customerMatches.length > 0 && (
+            <div className="mb-6 p-4 border-2 border-cyan-300 bg-cyan-50 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-900 mb-3">Multiple customers found - Select one:</h3>
+              <div className="space-y-2">
+                {customerMatches.map((customer) => (
+                  <button
+                    key={customer.id}
+                    type="button"
+                    onClick={() => handleSelectCustomer(customer)}
+                    className="w-full text-left p-3 bg-white border border-gray-300 rounded-lg hover:border-cyan-500 hover:bg-cyan-50 transition"
+                  >
+                    <p className="font-medium text-gray-900">{customer.first_name} {customer.last_name}</p>
+                    <p className="text-sm text-gray-600">{customer.email} • {customer.phone}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Pet Details Section - For Existing Customers with Pets */}
+          {customerLookupStatus === 'found' && customerPets.length > 0 && !showNewPetSection && (
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <div className="flex items-center gap-2 mb-3">
+                <PawPrint className="w-5 h-5 text-cyan-600" />
+                <h3 className="text-sm font-semibold text-gray-700">Pet Details</h3>
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Pet for Appointment <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedPetId}
+                  onChange={(e) => setSelectedPetId(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white"
+                  required
+                >
+                  <option value="">Select a pet</option>
+                  {customerPets.map((pet) => (
+                    <option key={pet.id} value={pet.id}>
+                      {pet.pet_name} ({pet.pet_type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowNewPetSection(true)}
+                className="text-sm text-cyan-600 hover:text-cyan-700 underline"
+              >
+                + Add a new pet for this customer
+              </button>
+            </div>
+          )}
+
+          {/* No Pets Message - For Existing Customers without Pets */}
+          {customerLookupStatus === 'found' && customerPets.length === 0 && !showNewPetSection && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                No pets found for this customer. Please add pet details below.
+              </p>
+            </div>
+          )}
+
+          {/* Add Pet Details Section - For New Customers or Adding New Pets */}
+          {(isNewCustomer || showNewPetSection) && (
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-slate-50">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <PawPrint className="w-5 h-5 text-cyan-600" />
+                  <h3 className="text-sm font-semibold text-gray-700">Add Pet Details</h3>
+                </div>
+                {!isNewCustomer && showNewPetSection && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPetSection(false)}
+                    className="text-sm text-gray-600 hover:text-gray-800"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Pets <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={numberOfPets}
+                  onChange={(e) => handleNumberOfPetsChange(parseInt(e.target.value) || 1)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white"
+                  required
+                />
+              </div>
+
+              <div className="space-y-3">
+                {newPets.map((pet, index) => (
+                  <div key={index} className="p-3 bg-white border border-gray-200 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-600 mb-2">Pet {index + 1}</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Pet Type <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          value={pet.pet_type}
+                          onChange={(e) => updatePetData(index, 'pet_type', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 bg-white"
+                          required
+                        >
+                          <option value="">Select pet type</option>
+                          <option value="Dog">Dog</option>
+                          <option value="Cat">Cat</option>
+                          <option value="Bird">Bird</option>
+                          <option value="Rabbit">Rabbit</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Pet Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={pet.pet_name}
+                          onChange={(e) => updatePetData(index, 'pet_name', e.target.value)}
+                          placeholder="Pet name"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Service Type <span className="text-red-500">*</span>
