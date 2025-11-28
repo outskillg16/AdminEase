@@ -903,7 +903,11 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
           throw new Error('A customer with this email already exists');
         }
 
-        // Insert new customer
+        // Prepare auto-populated fields
+        const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+        const locationAddress = formData.locationDetails?.trim() || null;
+
+        // Insert new customer with auto-populated point_of_contact and address
         const { data: newCustomer, error: customerError } = await supabase
           .from('customers')
           .insert({
@@ -912,6 +916,8 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
             last_name: formData.lastName,
             email: formData.customerEmail,
             phone: formData.customerPhone,
+            point_of_contact: fullName,
+            address: locationAddress,
           })
           .select()
           .single();
