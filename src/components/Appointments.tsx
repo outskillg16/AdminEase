@@ -25,6 +25,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { validators, filters } from '../utils/validation';
 
 interface AppointmentsProps {
   user: {
@@ -655,6 +656,9 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
   const [saving, setSaving] = useState(false);
   const [availableServices, setAvailableServices] = useState<string[]>([]);
 
+  // Validation errors state
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   // Load services offered on mount
   useEffect(() => {
     loadServicesOffered();
@@ -835,41 +839,144 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
     }));
   };
 
+  // Validation helper functions
+  const validateField = (field: string, value: any): string | null => {
+    switch (field) {
+      case 'firstName':
+      case 'lastName':
+        const nameResult = validators.name(value, field === 'firstName' ? 'First Name' : 'Last Name');
+        return nameResult.isValid ? null : nameResult.error || 'Invalid name';
+
+      case 'customerEmail':
+        if (isNewCustomer || value) {
+          const emailResult = validators.email(value);
+          return emailResult.isValid ? null : emailResult.error || 'Invalid email';
+        }
+        return null;
+
+      case 'customerPhone':
+        if (isNewCustomer || value) {
+          const phoneResult = validators.phone(value);
+          return phoneResult.isValid ? null : phoneResult.error || 'Invalid phone';
+        }
+        return null;
+
+      case 'appointmentDate':
+        const dateResult = validators.date(value, 'Appointment Date');
+        return dateResult.isValid ? null : dateResult.error || 'Invalid date';
+
+      case 'appointmentTime':
+        const timeResult = validators.time(value);
+        return timeResult.isValid ? null : timeResult.error || 'Invalid time';
+
+      case 'durationMinutes':
+        const durationResult = validators.number(value, 15, 480, 'Duration');
+        return durationResult.isValid ? null : durationResult.error || 'Invalid duration';
+
+      default:
+        return null;
+    }
+  };
+
+  const handleFieldChange = (field: string, value: any) => {
+    // Apply filters based on field type
+    let filteredValue = value;
+
+    if (field === 'customerPhone') {
+      filteredValue = filters.phone(value);
+    } else if (field === 'customerEmail') {
+      filteredValue = filters.email(value);
+    } else if (field === 'firstName' || field === 'lastName') {
+      filteredValue = filters.sanitize(value);
+    }
+
+    // Update form data
+    setFormData(prev => ({ ...prev, [field]: filteredValue }));
+
+    // Clear validation error for this field
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validatePetName = (name: string, index: number): string | null => {
+    const result = validators.petName(name);
+    return result.isValid ? null : result.error || 'Invalid pet name';
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation
+    // Clear previous errors
+    setValidationErrors({});
+    const errors: Record<string, string> = {};
+
+    // Validate all fields
+    const firstNameError = validateField('firstName', formData.firstName);
+    if (firstNameError) errors.firstName = firstNameError;
+
+    const lastNameError = validateField('lastName', formData.lastName);
+    if (lastNameError) errors.lastName = lastNameError;
+
+    const emailError = validateField('customerEmail', formData.customerEmail);
+    if (emailError) errors.customerEmail = emailError;
+
+    const phoneError = validateField('customerPhone', formData.customerPhone);
+    if (phoneError) errors.customerPhone = phoneError;
+
+    const dateError = validateField('appointmentDate', formData.appointmentDate);
+    if (dateError) errors.appointmentDate = dateError;
+
+    const timeError = validateField('appointmentTime', formData.appointmentTime);
+    if (timeError) errors.appointmentTime = timeError;
+
+    // Validate future date/time
+    if (formData.appointmentDate && formData.appointmentTime) {
+      const futureValidation = validators.futureDate(formData.appointmentDate, formData.appointmentTime);
+      if (!futureValidation.isValid) {
+        errors.appointmentDate = futureValidation.error || 'Date must be in the future';
+      }
+    }
+
+    const durationError = validateField('durationMinutes', formData.durationMinutes);
+    if (durationError) errors.durationMinutes = durationError;
+
+    // Validate service selection
     if (formData.serviceTypes.length === 0) {
-      setError('Please select at least one service type');
-      return;
+      errors.serviceTypes = 'Please select at least one service type';
     }
 
     // Validate pet selection for existing customers
     if (!isNewCustomer && !showNewPetSection && !selectedPetId) {
-      setError('Please select a pet for this appointment');
-      return;
+      errors.petSelection = 'Please select a pet for this appointment';
     }
 
     // Validate new pet data
     if ((isNewCustomer || showNewPetSection) && newPets.length > 0) {
       for (let i = 0; i < newPets.length; i++) {
-        if (!newPets[i].pet_type || !newPets[i].pet_name) {
-          setError(`Please complete pet ${i + 1} details (type and name required)`);
-          return;
+        if (!newPets[i].pet_type) {
+          errors[`petType${i}`] = `Pet ${i + 1} type is required`;
+        }
+        if (!newPets[i].pet_name) {
+          errors[`petName${i}`] = `Pet ${i + 1} name is required`;
+        } else {
+          const petNameError = validatePetName(newPets[i].pet_name, i);
+          if (petNameError) {
+            errors[`petName${i}`] = petNameError;
+          }
         }
       }
     }
 
-    // Validate email and phone for new customers
-    if (isNewCustomer) {
-      if (!formData.customerEmail) {
-        setError('Email is required for new customers');
-        return;
-      }
-      if (!formData.customerPhone) {
-        setError('Phone is required for new customers');
-        return;
-      }
+    // If there are validation errors, display them and stop
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError(Object.values(errors)[0]); // Show first error
+      return;
     }
 
     setSaving(true);
@@ -1041,10 +1148,19 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                 type="text"
                 required
                 value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                onChange={(e) => handleFieldChange('firstName', e.target.value)}
+                onBlur={(e) => {
+                  const error = validateField('firstName', e.target.value);
+                  if (error) setValidationErrors(prev => ({ ...prev, firstName: error }));
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                  validationErrors.firstName ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="John"
               />
+              {validationErrors.firstName && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.firstName}</p>
+              )}
             </div>
 
             <div>
@@ -1055,10 +1171,19 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                 type="text"
                 required
                 value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                onChange={(e) => handleFieldChange('lastName', e.target.value)}
+                onBlur={(e) => {
+                  const error = validateField('lastName', e.target.value);
+                  if (error) setValidationErrors(prev => ({ ...prev, lastName: error }));
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                  validationErrors.lastName ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Doe"
               />
+              {validationErrors.lastName && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.lastName}</p>
+              )}
             </div>
 
             <div>
@@ -1071,11 +1196,20 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                   type="email"
                   required={isNewCustomer}
                   value={formData.customerEmail}
-                  onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                  onChange={(e) => handleFieldChange('customerEmail', e.target.value)}
+                  onBlur={(e) => {
+                    const error = validateField('customerEmail', e.target.value);
+                    if (error) setValidationErrors(prev => ({ ...prev, customerEmail: error }));
+                  }}
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                    validationErrors.customerEmail ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="john@example.com"
                 />
               </div>
+              {validationErrors.customerEmail && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.customerEmail}</p>
+              )}
             </div>
 
             <div>
@@ -1088,11 +1222,21 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                   type="tel"
                   required={isNewCustomer}
                   value={formData.customerPhone}
-                  onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                  onChange={(e) => handleFieldChange('customerPhone', e.target.value)}
+                  onBlur={(e) => {
+                    const error = validateField('customerPhone', e.target.value);
+                    if (error) setValidationErrors(prev => ({ ...prev, customerPhone: error }));
+                  }}
+                  className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                    validationErrors.customerPhone ? 'border-red-500' : 'border-gray-300'
+                  }`}
                   placeholder="+1 (555) 123-4567"
+                  maxLength={15}
                 />
               </div>
+              {validationErrors.customerPhone && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.customerPhone}</p>
+              )}
             </div>
           </div>
 
@@ -1319,9 +1463,18 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                 type="date"
                 required
                 value={formData.appointmentDate}
-                onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                onChange={(e) => handleFieldChange('appointmentDate', e.target.value)}
+                onBlur={(e) => {
+                  const error = validateField('appointmentDate', e.target.value);
+                  if (error) setValidationErrors(prev => ({ ...prev, appointmentDate: error }));
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                  validationErrors.appointmentDate ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.appointmentDate && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.appointmentDate}</p>
+              )}
             </div>
 
             <div>
@@ -1332,9 +1485,18 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
                 type="time"
                 required
                 value={formData.appointmentTime}
-                onChange={(e) => setFormData({ ...formData, appointmentTime: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                onChange={(e) => handleFieldChange('appointmentTime', e.target.value)}
+                onBlur={(e) => {
+                  const error = validateField('appointmentTime', e.target.value);
+                  if (error) setValidationErrors(prev => ({ ...prev, appointmentTime: error }));
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                  validationErrors.appointmentTime ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.appointmentTime && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.appointmentTime}</p>
+              )}
             </div>
 
             <div>
@@ -1342,11 +1504,21 @@ function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
               <input
                 type="number"
                 min="15"
+                max="480"
                 step="15"
                 value={formData.durationMinutes}
-                onChange={(e) => setFormData({ ...formData, durationMinutes: parseInt(e.target.value) })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                onChange={(e) => handleFieldChange('durationMinutes', parseInt(e.target.value) || 60)}
+                onBlur={(e) => {
+                  const error = validateField('durationMinutes', e.target.value);
+                  if (error) setValidationErrors(prev => ({ ...prev, durationMinutes: error }));
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-cyan-500 ${
+                  validationErrors.durationMinutes ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {validationErrors.durationMinutes && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.durationMinutes}</p>
+              )}
             </div>
 
             <div>

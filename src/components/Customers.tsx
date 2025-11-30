@@ -22,6 +22,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { validators, filters } from '../utils/validation';
 
 interface CustomersProps {
   user: {
