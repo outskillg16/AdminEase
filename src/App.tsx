@@ -24,8 +24,13 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only update user state on significant auth events to prevent unnecessary re-renders
+      // This prevents route navigation when window regains focus and session is refreshed
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        setUser(session?.user ?? null);
+      }
+      // Ignore TOKEN_REFRESHED event to maintain current route when switching apps/tabs
     });
 
     return () => subscription.unsubscribe();
