@@ -92,9 +92,76 @@ export default function Customers({ user, onLogout }: CustomersProps) {
   });
 
   const [pets, setPets] = useState<PetFormData[]>([{ pet_type: '', pet_name: '' }]);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  // Validation helper functions
+  const validateField = (field: string, value: any): string | null => {
+    switch (field) {
+      case 'firstName':
+      case 'lastName':
+        const nameResult = validators.name(value, field === 'firstName' ? 'First Name' : 'Last Name');
+        return nameResult.isValid ? null : nameResult.error || 'Invalid name';
+
+      case 'email':
+        const emailResult = validators.email(value);
+        return emailResult.isValid ? null : emailResult.error || 'Invalid email';
+
+      case 'phone':
+        const phoneResult = validators.phone(value);
+        return phoneResult.isValid ? null : phoneResult.error || 'Invalid phone';
+
+      case 'pointOfContact':
+        if (value && value.trim()) {
+          const contactResult = validators.name(value, 'Point of Contact');
+          return contactResult.isValid ? null : contactResult.error || 'Invalid contact name';
+        }
+        return null;
+
+      case 'address':
+        if (value && value.trim()) {
+          const addressResult = validators.address(value);
+          return addressResult.isValid ? null : addressResult.error || 'Invalid address';
+        }
+        return null;
+
+      case 'numberOfPets':
+        const numResult = validators.number(value, 1, 20, 'Number of Pets');
+        return numResult.isValid ? null : numResult.error || 'Invalid number';
+
+      default:
+        return null;
+    }
+  };
+
+  const handleFieldChange = (field: string, value: any) => {
+    let filteredValue = value;
+
+    if (field === 'phone') {
+      filteredValue = filters.phone(value);
+    } else if (field === 'email') {
+      filteredValue = filters.email(value);
+    } else if (field === 'firstName' || field === 'lastName' || field === 'pointOfContact') {
+      filteredValue = filters.sanitize(value);
+    }
+
+    setFormData(prev => ({ ...prev, [field]: filteredValue }));
+
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  };
+
+  const validatePetName = (name: string): string | null => {
+    const result = validators.petName(name);
+    return result.isValid ? null : result.error || 'Invalid pet name';
+  };
 
   useEffect(() => {
     document.title = 'Customers - AdminEase';
@@ -222,41 +289,51 @@ export default function Customers({ user, onLogout }: CustomersProps) {
   };
 
   const validateForm = () => {
-    if (formData.firstName.trim().length < 2) {
-      setError('First name must be at least 2 characters');
-      return false;
-    }
-    if (formData.lastName.trim().length < 2) {
-      setError('Last name must be at least 2 characters');
-      return false;
-    }
-    if (!formData.phone.trim()) {
-      setError('Phone number is required');
-      return false;
-    }
-    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-    if (formData.address && formData.address.length > 500) {
-      setError('Address must be less than 500 characters');
-      return false;
-    }
-    if (formData.numberOfPets < 1 || formData.numberOfPets > 20) {
-      setError('Number of pets must be between 1 and 20');
-      return false;
-    }
+    setValidationErrors({});
+    const errors: Record<string, string> = {};
 
+    // Validate all fields
+    const firstNameError = validateField('firstName', formData.firstName);
+    if (firstNameError) errors.firstName = firstNameError;
+
+    const lastNameError = validateField('lastName', formData.lastName);
+    if (lastNameError) errors.lastName = lastNameError;
+
+    const phoneError = validateField('phone', formData.phone);
+    if (phoneError) errors.phone = phoneError;
+
+    const emailError = validateField('email', formData.email);
+    if (emailError) errors.email = emailError;
+
+    const contactError = validateField('pointOfContact', formData.pointOfContact);
+    if (contactError) errors.pointOfContact = contactError;
+
+    const addressError = validateField('address', formData.address);
+    if (addressError) errors.address = addressError;
+
+    const numPetsError = validateField('numberOfPets', formData.numberOfPets);
+    if (numPetsError) errors.numberOfPets = numPetsError;
+
+    // Validate pets
     for (let i = 0; i < pets.length; i++) {
       if (!pets[i].pet_type) {
-        setError(`Please select a pet type for Pet ${i + 1}`);
-        return false;
+        errors[`petType${i}`] = `Pet ${i + 1} type is required`;
       }
-      if (pets[i].pet_name.trim().length < 2) {
-        setError(`Pet ${i + 1} name must be at least 2 characters`);
-        return false;
+      if (!pets[i].pet_name || !pets[i].pet_name.trim()) {
+        errors[`petName${i}`] = `Pet ${i + 1} name is required`;
+      } else {
+        const petNameError = validatePetName(pets[i].pet_name);
+        if (petNameError) {
+          errors[`petName${i}`] = petNameError;
+        }
       }
+    }
+
+    // If there are errors, display them
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      setError(Object.values(errors)[0]);
+      return false;
     }
 
     return true;
