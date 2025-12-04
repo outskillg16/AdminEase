@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
+import HomePage from './components/HomePage';
 import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
@@ -57,8 +58,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage user={user} onSignOut={handleSignOut} />} />
-        <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+        <Route path="/" element={user ? <Navigate to="/home" /> : <LandingPage user={user} onSignOut={handleSignOut} />} />
+        <Route path="/auth" element={user ? <Navigate to="/home" /> : <AuthPage />} />
+        <Route
+          path="/home"
+          element={user ? <HomePage user={user} onLogout={handleSignOut} /> : <Navigate to="/auth" />}
+        />
         <Route
           path="/dashboard"
           element={user ? <Dashboard user={user} onLogout={handleSignOut} /> : <Navigate to="/auth" />}
@@ -67,7 +72,7 @@ function App() {
           path="/onboarding"
           element={
             user ? (
-              <OnboardingForm user={user} onLogout={handleSignOut} onComplete={() => window.location.href = '/dashboard'} />
+              <OnboardingForm user={user} onLogout={handleSignOut} onComplete={() => window.location.href = '/home'} />
             ) : (
               <Navigate to="/auth" />
             )
@@ -133,7 +138,7 @@ function App() {
             )
           }
         />
-        <Route path="*" element={user ? <Navigate to="/dashboard" /> : <Navigate to="/" />} />
+        <Route path="*" element={user ? <Navigate to="/home" /> : <Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
