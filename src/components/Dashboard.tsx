@@ -53,7 +53,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [profileComplete, setProfileComplete] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const [activeTab, setActiveTab] = useState('Home');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
@@ -176,7 +176,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
     const iconProps = { className: "w-5 h-5" };
     switch (tab) {
       case 'Home':
-      case 'Dashboard':
         return <Home {...iconProps} />;
       case 'Onboarding':
         return <UserPlus {...iconProps} />;
@@ -217,11 +216,14 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
 
             <div className="flex items-center space-x-1">
               <nav className="hidden md:flex space-x-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
                       setActiveTab(tab);
+                      if (tab === 'Home') {
+                        navigate('/home');
+                      }
                       if (tab === 'Onboarding') {
                         navigate('/onboarding');
                       }
@@ -317,12 +319,15 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
           {showMobileMenu && (
             <div className="md:hidden border-t border-gray-200 py-3 animate-fade-in">
               <nav className="flex flex-col space-y-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
                       setActiveTab(tab);
                       setShowMobileMenu(false);
+                      if (tab === 'Home') {
+                        navigate('/home');
+                      }
                       if (tab === 'Onboarding') {
                         navigate('/onboarding');
                       }

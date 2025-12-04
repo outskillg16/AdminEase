@@ -277,7 +277,7 @@ export default function Customers({ user, onLogout }: CustomersProps) {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Dashboard') navigate('/dashboard');
+    if (tab === 'Home') navigate('/home');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
@@ -291,7 +291,6 @@ export default function Customers({ user, onLogout }: CustomersProps) {
     const iconProps = { className: "w-5 h-5" };
     switch (tab) {
       case 'Home':
-      case 'Dashboard':
         return <Home {...iconProps} />;
       case 'Onboarding':
         return <UserPlus {...iconProps} />;
@@ -585,7 +584,7 @@ export default function Customers({ user, onLogout }: CustomersProps) {
 
             <div className="flex items-center space-x-1">
               <nav className="hidden md:flex space-x-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => handleNavigate(tab)}
@@ -649,7 +648,7 @@ export default function Customers({ user, onLogout }: CustomersProps) {
           {showMobileMenu && (
             <div className="md:hidden border-t border-gray-200 py-3">
               <nav className="flex flex-col space-y-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {

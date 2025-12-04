@@ -77,7 +77,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Dashboard') navigate('/dashboard');
+    if (tab === 'Home') navigate('/home');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'Call Management') navigate('/call-management');
@@ -200,7 +200,6 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     const iconProps = { className: "w-5 h-5" };
     switch (tab) {
       case 'Home':
-      case 'Dashboard':
         return <Home {...iconProps} />;
       case 'Onboarding':
         return <UserPlus {...iconProps} />;
@@ -221,7 +220,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
     }
   };
 
-  const menuTabs = ['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
+  const menuTabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">

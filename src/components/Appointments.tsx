@@ -176,7 +176,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Home') navigate('/');
+    if (tab === 'Home') navigate('/home');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'AI Assistant') navigate('/ai-assistant');

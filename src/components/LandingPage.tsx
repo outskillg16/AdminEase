@@ -44,10 +44,10 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
                   Welcome, {user.user_metadata?.full_name || user.email}
                 </span>
                 <button
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/home')}
                   className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition"
                 >
-                  Dashboard
+                  Home
                 </button>
                 <button
                   onClick={onSignOut}
