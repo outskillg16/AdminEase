@@ -26,6 +26,11 @@ import {
   Calendar,
   Download,
   ChevronDown,
+  Home,
+  FileText,
+  UserPlus,
+  Users,
+  Bot,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -232,6 +237,31 @@ export default function CallManagement({ user, onLogout }: CallManagementProps) 
     if (tab === 'Customers') navigate('/customers');
   };
 
+  const getTabIcon = (tab: string) => {
+    const iconProps = { className: "w-4 h-4" };
+    switch (tab) {
+      case 'Home':
+      case 'Dashboard':
+        return <Home {...iconProps} />;
+      case 'Onboarding':
+        return <UserPlus {...iconProps} />;
+      case 'AI Configuration':
+        return <Settings {...iconProps} />;
+      case 'AI Assistant':
+        return <Bot {...iconProps} />;
+      case 'Call Management':
+        return <Phone {...iconProps} />;
+      case 'Appointments':
+        return <Calendar {...iconProps} />;
+      case 'Documents':
+        return <FileText {...iconProps} />;
+      case 'Customers':
+        return <Users {...iconProps} />;
+      default:
+        return null;
+    }
+  };
+
   const paginatedCalls = filteredCalls.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
@@ -272,14 +302,20 @@ export default function CallManagement({ user, onLogout }: CallManagementProps) 
               {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                 <button
                   key={tab}
+                  title={tab}
                   onClick={() => handleNavigate(tab)}
-                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 flex items-center gap-2 group relative ${
                     activeTab === tab
                       ? 'text-cyan-600 border-cyan-600'
                       : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                   }`}
                 >
-                  {tab}
+                  {getTabIcon(tab)}
+                  <span>{tab}</span>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                    {tab}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
                 </button>
               ))}
             </nav>
@@ -346,13 +382,14 @@ export default function CallManagement({ user, onLogout }: CallManagementProps) 
                       handleNavigate(tab);
                       setShowMobileMenu(false);
                     }}
-                    className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 ${
+                    className={`px-4 py-3 text-sm font-medium text-left transition-all duration-200 flex items-center gap-2 ${
                       activeTab === tab
                         ? 'bg-cyan-50 text-cyan-600 border-l-4 border-cyan-600'
                         : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent'
                     }`}
                   >
-                    {tab}
+                    {getTabIcon(tab)}
+                    <span>{tab}</span>
                   </button>
                 ))}
               </nav>
