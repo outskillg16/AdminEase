@@ -118,20 +118,12 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     try {
       const { monday, friday } = getWeekRange();
 
-      // Format dates without timezone conversion
-      const formatDate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
-
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
         .eq('user_id', user.id)
-        .gte('appointment_date', formatDate(monday))
-        .lte('appointment_date', formatDate(friday))
+        .gte('appointment_date', monday.toISOString())
+        .lte('appointment_date', friday.toISOString())
         .neq('status', 'cancelled')
         .order('appointment_time', { ascending: true });
 
@@ -144,11 +136,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
 
   const fetchTodayAppointments = async () => {
     try {
-      // Format date without timezone conversion to avoid date shifting
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
+      const dateStr = selectedDate.toISOString().split('T')[0];
 
       const { data, error } = await supabase
         .from('appointments')
@@ -170,21 +158,13 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
       const now = new Date();
       const { friday } = getWeekRange();
 
-      // Format dates without timezone conversion
-      const formatDate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
-
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'scheduled')
-        .gte('appointment_date', formatDate(now))
-        .lte('appointment_date', formatDate(friday))
+        .gte('appointment_date', now.toISOString().split('T')[0])
+        .lte('appointment_date', friday.toISOString().split('T')[0])
         .order('appointment_date', { ascending: true })
         .order('appointment_time', { ascending: true })
         .limit(5);
@@ -208,20 +188,12 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     try {
       const { monday, friday } = getWeekRange();
 
-      // Format dates without timezone conversion
-      const formatDate = (date: Date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
-
       const { data, error } = await supabase
         .from('appointments')
         .select('status, appointment_date')
         .eq('user_id', user.id)
-        .gte('appointment_date', formatDate(monday))
-        .lte('appointment_date', formatDate(friday));
+        .gte('appointment_date', monday.toISOString())
+        .lte('appointment_date', friday.toISOString());
 
       if (error) throw error;
 
