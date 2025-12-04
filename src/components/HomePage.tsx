@@ -253,7 +253,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
   const tabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   const getTabIcon = (tab: string) => {
-    const iconProps = { className: "w-4 h-4" };
+    const iconProps = { className: "w-5 h-5" };
     switch (tab) {
       case 'Home':
         return <Home {...iconProps} />;
@@ -312,16 +312,14 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
                   <button
                     key={tab}
                     onClick={() => handleNavigate(tab)}
-                    title={tab}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 group relative ${
+                    className={`p-2.5 rounded-lg transition-all group relative ${
                       activeTab === tab
                         ? 'bg-cyan-50 text-cyan-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {getTabIcon(tab)}
-                    <span>{tab}</span>
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
                       {tab}
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
                     </div>
