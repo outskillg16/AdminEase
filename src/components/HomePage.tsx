@@ -4,9 +4,7 @@ import {
   Home,
   Calendar,
   FileText,
-  Settings,
   LogOut,
-  User,
   Zap,
   Menu,
   X,
@@ -45,7 +43,6 @@ interface WeeklyStats {
 
 export default function HomePage({ user, onLogout }: HomePageProps) {
   const navigate = useNavigate();
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('Home');
 
@@ -334,51 +331,16 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
                   </button>
                 ))}
               </nav>
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="p-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition group relative"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
-                    Sign Out
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
-                  </div>
-                </button>
-
-                {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                    <button
-                      onClick={() => {
-                        navigate('/onboarding');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Profile Settings</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        navigate('/ai-configuration');
-                        setShowProfileMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
-                    >
-                      <Settings className="w-4 h-4" />
-                      <span>AI Configuration</span>
-                    </button>
-                    <hr className="my-1" />
-                    <button
-                      onClick={onLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={onLogout}
+                className="p-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition group relative"
+              >
+                <LogOut className="w-5 h-5" />
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                  Sign Out
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
+                </div>
+              </button>
 
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
