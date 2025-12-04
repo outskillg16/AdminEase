@@ -50,9 +50,39 @@ export default function WeekAtGlance({ appointments }: WeekAtGlanceProps) {
 
   const getBarStyle = (count: number) => {
     if (count === 0) return null;
-    if (count === 1) return { bg: '#E8E8E8', label: 'LIGHT', height: 40 };
-    if (count <= 3) return { bg: '#BDBDBD', label: 'MODERATE', height: 60 };
-    return { bg: '#757575', label: 'BUSY', height: 80 };
+    if (count === 1) return { bg: '#E8E8E8', label: 'LIGHT' };
+    if (count <= 3) return { bg: '#BDBDBD', label: 'MODERATE' };
+    return { bg: '#757575', label: 'BUSY' };
+  };
+
+  const calculateBarPosition = (appointments: Appointment[]) => {
+    if (appointments.length === 0) return null;
+
+    const earliestTime = Math.min(
+      ...appointments.map((apt) => {
+        const [hours, minutes] = apt.appointment_time.split(':').map(Number);
+        return hours * 60 + minutes;
+      })
+    );
+
+    const latestTime = Math.max(
+      ...appointments.map((apt) => {
+        const [hours, minutes] = apt.appointment_time.split(':').map(Number);
+        return hours * 60 + minutes + apt.duration_minutes;
+      })
+    );
+
+    const startHour = 8;
+    const endHour = 17;
+    const totalMinutes = (endHour - startHour) * 60;
+
+    const left = ((earliestTime - startHour * 60) / totalMinutes) * 100;
+    const width = ((latestTime - earliestTime) / totalMinutes) * 100;
+
+    return {
+      left: Math.max(0, Math.min(left, 100)),
+      width: Math.max(5, Math.min(width, 100 - left)),
+    };
   };
 
   const formatTime = (timeStr: string, durationMins: number) => {
@@ -87,29 +117,45 @@ export default function WeekAtGlance({ appointments }: WeekAtGlanceProps) {
 
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+      <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
         <span className="text-2xl mr-2">📊</span>
         Your Week at a Glance
       </h2>
 
-      <div className="grid grid-cols-5 gap-4">
+      <div className="space-y-4">
         {weekDays.map((day) => {
           const dayAppointments = appointmentsByDay[day.date] || [];
           const count = dayAppointments.length;
           const barStyle = getBarStyle(count);
+          const barPosition = calculateBarPosition(dayAppointments);
 
           return (
-            <div key={day.date} className="text-center">
-              <div className="font-semibold text-gray-700 mb-2">{day.name}</div>
-              <div className="text-xs text-gray-500 mb-1">8AM</div>
+            <div key={day.date} className="flex items-center space-x-4">
+              <div className="w-20 text-left">
+                <div className="font-semibold text-gray-900 text-sm">{day.name}</div>
+                <div className="text-xs text-gray-500">
+                  {count} event{count !== 1 ? 's' : ''}
+                </div>
+              </div>
 
-              <div className="h-32 flex items-center justify-center relative">
-                {barStyle && (
+              <div className="flex-1 relative h-10 border-t border-b border-gray-200">
+                <div className="absolute left-0 top-0 bottom-0 flex items-center">
+                  <span className="text-xs text-gray-500 -ml-3">8AM</span>
+                </div>
+                <div className="absolute left-1/2 top-0 bottom-0 flex items-center -translate-x-1/2">
+                  <span className="text-xs text-gray-500">12PM</span>
+                </div>
+                <div className="absolute right-0 top-0 bottom-0 flex items-center">
+                  <span className="text-xs text-gray-500 -mr-3">5PM</span>
+                </div>
+
+                {barStyle && barPosition && (
                   <div
-                    className="w-full rounded transition-all duration-200 cursor-pointer hover:opacity-80 hover:scale-105"
+                    className="absolute top-1/2 -translate-y-1/2 h-6 rounded transition-all duration-200 cursor-pointer hover:opacity-80"
                     style={{
                       backgroundColor: barStyle.bg,
-                      height: `${barStyle.height}px`,
+                      left: `${barPosition.left}%`,
+                      width: `${barPosition.width}%`,
                     }}
                     onMouseEnter={(e) => handleMouseEnter(day.date, e)}
                     onMouseLeave={handleMouseLeave}
@@ -117,17 +163,16 @@ export default function WeekAtGlance({ appointments }: WeekAtGlanceProps) {
                 )}
               </div>
 
-              <div className="text-xs text-gray-500 my-1">12PM</div>
-              <div className="text-xs text-gray-500 mb-2">5PM</div>
-
-              {barStyle && (
-                <div className="text-xs font-semibold text-gray-600 tracking-wide mb-1">
-                  {barStyle.label}
-                </div>
-              )}
-
-              <div className="text-xs text-gray-500">
-                {count} event{count !== 1 ? 's' : ''}
+              <div className="w-24 text-center">
+                {barStyle ? (
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700 border border-green-300">
+                    {barStyle.label}
+                  </span>
+                ) : (
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-300">
+                    EMPTY
+                  </span>
+                )}
               </div>
             </div>
           );
