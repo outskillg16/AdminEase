@@ -132,13 +132,18 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
 
   const fetchTodayAppointments = async () => {
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
 
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
         .eq('user_id', user.id)
-        .eq('appointment_date', dateStr)
+        .gte('appointment_date', startOfDay.toISOString())
+        .lte('appointment_date', endOfDay.toISOString())
         .neq('status', 'cancelled')
         .order('appointment_time', { ascending: true });
 
