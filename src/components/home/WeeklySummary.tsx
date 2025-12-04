@@ -76,7 +76,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
       <div className="mt-auto pt-4">
         <button
           onClick={onNewAppointment}
-          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+          className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
         >
           <Plus className="w-5 h-5" />
           <span>New Appointment</span>
