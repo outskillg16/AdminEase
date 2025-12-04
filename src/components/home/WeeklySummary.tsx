@@ -21,8 +21,8 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
         Weekly Summary
       </h2>
 
-      <div className="space-y-2 flex-1">
-        <div className="flex items-center justify-between py-1">
+      <div className="space-y-1 flex-1">
+        <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-4 h-4 text-blue-600" />
@@ -32,7 +32,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
           <span className="text-2xl font-bold text-blue-600">{stats.total}</span>
         </div>
 
-        <div className="flex items-center justify-between py-1">
+        <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-4 h-4 text-green-600" />
@@ -42,7 +42,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
           <span className="text-xl font-semibold text-green-600">{stats.completed}</span>
         </div>
 
-        <div className="flex items-center justify-between py-1">
+        <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-orange-100 rounded-lg flex items-center justify-center">
               <Calendar className="w-4 h-4 text-orange-600" />
@@ -52,7 +52,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
           <span className="text-xl font-semibold text-orange-600">{stats.upcoming}</span>
         </div>
 
-        <div className="flex items-center justify-between py-1">
+        <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-red-100 rounded-lg flex items-center justify-center">
               <XCircle className="w-4 h-4 text-red-600" />
@@ -62,7 +62,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
           <span className="text-xl font-semibold text-red-600">{stats.cancelled}</span>
         </div>
 
-        <div className="flex items-center justify-between py-1">
+        <div className="flex items-center justify-between py-0.5">
           <div className="flex items-center space-x-2">
             <div className="w-7 h-7 bg-purple-100 rounded-lg flex items-center justify-center">
               <RefreshCw className="w-4 h-4 text-purple-600" />
@@ -73,7 +73,7 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
         </div>
       </div>
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto pt-3">
         <button
           onClick={onNewAppointment}
           className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
