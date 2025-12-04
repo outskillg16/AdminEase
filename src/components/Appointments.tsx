@@ -624,7 +624,7 @@ function EmptyState() {
 }
 
 // Enhanced CreateAppointmentModal with Pet Details Integration
-function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
+export function CreateAppointmentModal({ user, onClose, onSuccess, setError }: any) {
   // Form data state
   const [formData, setFormData] = useState({
     firstName: '',

@@ -18,6 +18,7 @@ import WeeklySummary from './home/WeeklySummary';
 import TodaysCalendar from './home/TodaysCalendar';
 import UpcomingWeek from './home/UpcomingWeek';
 import RecentActivity from './home/RecentActivity';
+import { CreateAppointmentModal } from './Appointments';
 
 interface HomePageProps {
   user: {
@@ -422,6 +423,19 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
           </div>
         </div>
       </main>
+
+      {/* New Appointment Modal */}
+      {showNewAppointmentModal && (
+        <CreateAppointmentModal
+          user={user}
+          onClose={() => setShowNewAppointmentModal(false)}
+          onSuccess={() => {
+            setShowNewAppointmentModal(false);
+            fetchAllData();
+          }}
+          setError={setError}
+        />
+      )}
     </div>
   );
 }
