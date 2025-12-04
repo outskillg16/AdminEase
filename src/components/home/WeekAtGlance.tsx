@@ -32,9 +32,13 @@ export default function WeekAtGlance({ appointments }: WeekAtGlanceProps) {
     return Array.from({ length: 5 }, (_, i) => {
       const date = new Date(monday);
       date.setDate(monday.getDate() + i);
+      // Format date without timezone conversion
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
       return {
         name: date.toLocaleDateString('en-US', { weekday: 'short' }),
-        date: date.toISOString().split('T')[0],
+        date: `${year}-${month}-${day}`,
         fullName: date.toLocaleDateString('en-US', { weekday: 'long' }),
       };
     });
