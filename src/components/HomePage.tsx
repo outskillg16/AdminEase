@@ -12,6 +12,7 @@ import {
   Bot,
   Phone,
   Users,
+  Settings,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import GreetingHeader from './home/GreetingHeader';
