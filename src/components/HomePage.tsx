@@ -295,18 +295,21 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
       <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-                    AdminEase
-                  </h1>
-                </div>
+            <button
+              onClick={() => navigate('/home')}
+              className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Zap className="w-6 h-6 text-white" />
               </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+                  AdminEase
+                </h1>
+              </div>
+            </button>
 
+            <div className="flex items-center space-x-1">
               <nav className="hidden lg:flex space-x-1">
                 {tabs.map((tab) => (
                   <button
@@ -326,9 +329,6 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
                   </button>
                 ))}
               </nav>
-            </div>
-
-            <div className="flex items-center space-x-4">
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}

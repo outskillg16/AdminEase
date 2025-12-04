@@ -203,9 +203,8 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/home')}
               className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
             >
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
@@ -216,53 +215,49 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
               </span>
             </button>
 
-            {/* Navigation Links */}
-            <nav className="hidden md:flex items-center space-x-1">
-              {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    if (tab === 'Onboarding') {
-                      navigate('/onboarding');
-                    }
-                    if (tab === 'AI Configuration') {
-                      navigate('/ai-configuration');
-                    }
-                    if (tab === 'AI Assistant') {
-                      navigate('/ai-assistant');
-                    }
-                    if (tab === 'Call Management') {
-                      navigate('/call-management');
-                    }
-                    if (tab === 'Appointments') {
-                      navigate('/appointments');
-                    }
-                    if (tab === 'Documents') {
-                      navigate('/documents');
-                    }
-                    if (tab === 'Customers') {
-                      navigate('/customers');
-                    }
-                  }}
-                  className={`p-2.5 rounded-lg transition-all group relative ${
-                    activeTab === tab
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  {getTabIcon(tab)}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
-                    {tab}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
-                  </div>
-                </button>
-              ))}
-            </nav>
-
-            {/* Right Side - Mobile Menu + User Profile */}
-            <div className="flex items-center space-x-2">
-              {/* Mobile Menu Button */}
+            <div className="flex items-center space-x-1">
+              <nav className="hidden md:flex space-x-1">
+                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => {
+                      setActiveTab(tab);
+                      if (tab === 'Onboarding') {
+                        navigate('/onboarding');
+                      }
+                      if (tab === 'AI Configuration') {
+                        navigate('/ai-configuration');
+                      }
+                      if (tab === 'AI Assistant') {
+                        navigate('/ai-assistant');
+                      }
+                      if (tab === 'Call Management') {
+                        navigate('/call-management');
+                      }
+                      if (tab === 'Appointments') {
+                        navigate('/appointments');
+                      }
+                      if (tab === 'Documents') {
+                        navigate('/documents');
+                      }
+                      if (tab === 'Customers') {
+                        navigate('/customers');
+                      }
+                    }}
+                    className={`p-2.5 rounded-lg transition-all group relative ${
+                      activeTab === tab
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    {getTabIcon(tab)}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                      {tab}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
+                    </div>
+                  </button>
+                ))}
+              </nav>
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
                 className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition"
@@ -274,7 +269,6 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                 )}
               </button>
 
-              {/* User Profile */}
               <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}

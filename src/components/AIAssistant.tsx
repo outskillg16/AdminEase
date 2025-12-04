@@ -229,7 +229,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/home')}
               className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg flex items-center justify-center">
@@ -238,27 +238,26 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
               <span className="text-xl font-bold text-gray-900 hidden sm:block">AdminEase</span>
             </button>
 
-            <nav className="hidden md:flex items-center space-x-1">
-              {menuTabs.map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => handleNavigate(tab)}
-                  className={`p-2.5 rounded-lg transition-all group relative ${
-                    activeTab === tab
-                      ? 'bg-cyan-600 text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {getTabIcon(tab)}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
-                    {tab}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
-                  </div>
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <nav className="hidden md:flex space-x-1">
+                {menuTabs.map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => handleNavigate(tab)}
+                    className={`p-2.5 rounded-lg transition-all group relative ${
+                      activeTab === tab
+                        ? 'bg-cyan-600 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {getTabIcon(tab)}
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                      {tab}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
+                    </div>
+                  </button>
+                ))}
+              </nav>
               <button
                 onClick={toggleVoice}
                 className={`p-2 rounded-lg transition ${
@@ -276,7 +275,7 @@ export default function AIAssistant({ user, onLogout }: AIAssistantProps) {
                 {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
 
-              <div className="relative hidden md:block">
+              <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   className="p-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition group relative"
