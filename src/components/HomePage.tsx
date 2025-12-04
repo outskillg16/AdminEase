@@ -319,9 +319,9 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
                     }`}
                   >
                     {getTabIcon(tab)}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
                       {tab}
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
                     </div>
                   </button>
                 ))}
@@ -332,14 +332,12 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+                  className="p-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition group relative"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">{initials}</span>
-                  </div>
-                  <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium text-gray-900">{fullName}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                  <LogOut className="w-5 h-5" />
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                    Sign Out
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
                   </div>
                 </button>
 

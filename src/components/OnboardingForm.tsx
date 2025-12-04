@@ -17,6 +17,12 @@ import {
   X,
   Edit,
   Plus,
+  Home,
+  Calendar,
+  FileText,
+  Bot,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -153,6 +159,30 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
     .join('')
     .toUpperCase()
     .slice(0, 2);
+
+  const getTabIcon = (tab: string) => {
+    const iconProps = { className: "w-5 h-5" };
+    switch (tab) {
+      case 'Dashboard':
+        return <Home {...iconProps} />;
+      case 'Onboarding':
+        return <UserPlus {...iconProps} />;
+      case 'AI Configuration':
+        return <Settings {...iconProps} />;
+      case 'AI Assistant':
+        return <Bot {...iconProps} />;
+      case 'Call Management':
+        return <Phone {...iconProps} />;
+      case 'Appointments':
+        return <Calendar {...iconProps} />;
+      case 'Documents':
+        return <FileText {...iconProps} />;
+      case 'Customers':
+        return <Users {...iconProps} />;
+      default:
+        return null;
+    }
+  };
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
@@ -406,13 +436,17 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
                 <button
                   key={tab}
                   onClick={() => handleNavigate(tab)}
-                  className={`px-4 py-2 text-sm font-medium transition-all duration-200 border-b-2 ${
+                  className={`p-2.5 rounded-lg transition-all group relative ${
                     activeTab === tab
-                      ? 'text-cyan-600 border-cyan-600'
-                      : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
+                      ? 'bg-cyan-50 text-cyan-600 shadow-sm'
+                      : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  {tab}
+                  {getTabIcon(tab)}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                    {tab}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
+                  </div>
                 </button>
               ))}
             </nav>
@@ -428,16 +462,12 @@ export default function OnboardingForm({ user, onLogout, onComplete }: Onboardin
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center space-x-3 hover:bg-gray-50 rounded-lg px-3 py-2 transition"
+                  className="p-2.5 rounded-lg text-gray-600 hover:bg-gray-50 transition group relative"
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-sm font-semibold text-gray-900">{fullName}</p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
-                    </div>
-                    <div className="w-10 h-10 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold text-sm">{initials}</span>
-                    </div>
+                  <LogOut className="w-5 h-5" />
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg z-50">
+                    Sign Out
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 border-4 border-transparent border-b-gray-900"></div>
                   </div>
                 </button>
 
