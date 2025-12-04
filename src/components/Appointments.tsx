@@ -23,6 +23,7 @@ import {
   Loader2,
   PawPrint,
   Mail,
+  Home,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { validators, filters } from '../utils/validation';
@@ -172,7 +173,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Dashboard') navigate('/dashboard');
+    if (tab === 'Home') navigate('/');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
@@ -226,7 +227,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
             >
               <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-2 rounded-lg">
@@ -238,7 +239,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
             </button>
 
             <nav className="hidden md:flex items-center space-x-1">
-              {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+              {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => handleNavigate(tab)}
@@ -248,6 +249,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
                       : 'text-gray-600 border-transparent hover:text-gray-900 hover:border-gray-300'
                   }`}
                 >
+                  {tab === 'Home' && <Home className="w-4 h-4 inline mr-1" />}
                   {tab}
                 </button>
               ))}
@@ -304,7 +306,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
           {showMobileMenu && (
             <div className="md:hidden border-t border-gray-200 py-3">
               <nav className="flex flex-col space-y-1">
-                {['Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
+                {['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {

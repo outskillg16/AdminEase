@@ -237,7 +237,6 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
 
   const handleNavigate = (tab: string) => {
     setActiveTab(tab);
-    if (tab === 'Dashboard') navigate('/dashboard');
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
@@ -247,7 +246,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     if (tab === 'Customers') navigate('/customers');
   };
 
-  const tabs = ['Home', 'Dashboard', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
+  const tabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   if (isLoading) {
     return (
