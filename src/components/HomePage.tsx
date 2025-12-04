@@ -139,7 +139,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
         .select('*')
         .eq('user_id', user.id)
         .eq('appointment_date', dateStr)
-        .eq('status', 'scheduled')
+        .neq('status', 'cancelled')
         .order('appointment_time', { ascending: true });
 
       if (error) throw error;
