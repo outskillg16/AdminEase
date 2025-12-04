@@ -1,12 +1,13 @@
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Bot } from 'lucide-react';
 
 interface GreetingHeaderProps {
   userName: string;
   appointmentCount: number;
   currentDate: Date;
+  onOpenAIAssistant?: () => void;
 }
 
-export default function GreetingHeader({ userName, appointmentCount, currentDate }: GreetingHeaderProps) {
+export default function GreetingHeader({ userName, appointmentCount, currentDate, onOpenAIAssistant }: GreetingHeaderProps) {
   const getTimeBasedGreeting = () => {
     const hour = currentDate.getHours();
 
@@ -48,6 +49,17 @@ export default function GreetingHeader({ userName, appointmentCount, currentDate
             {appointmentCount} appointment{appointmentCount !== 1 ? 's' : ''} scheduled today
           </p>
         </div>
+        {onOpenAIAssistant && (
+          <div className="ml-4">
+            <button
+              onClick={onOpenAIAssistant}
+              className="flex items-center space-x-2 px-6 py-3 bg-white text-blue-600 rounded-lg font-semibold shadow-md hover:bg-blue-50 hover:shadow-lg transition-all"
+            >
+              <Bot className="w-5 h-5" />
+              <span>AI Assistant</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

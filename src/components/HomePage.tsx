@@ -421,6 +421,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
           userName={fullName}
           appointmentCount={todayAppointments.length}
           currentDate={currentDate}
+          onOpenAIAssistant={() => navigate('/ai-assistant')}
         />
 
         {error && (
