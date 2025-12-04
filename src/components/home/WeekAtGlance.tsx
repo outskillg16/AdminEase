@@ -116,13 +116,13 @@ export default function WeekAtGlance({ appointments }: WeekAtGlanceProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+    <div className="bg-white rounded-xl shadow-md p-6 h-full flex flex-col">
+      <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
         <span className="text-2xl mr-2">📊</span>
         Your Week at a Glance
       </h2>
 
-      <div className="space-y-4">
+      <div className="space-y-3 flex-1">
         {weekDays.map((day) => {
           const dayAppointments = appointmentsByDay[day.date] || [];
           const count = dayAppointments.length;

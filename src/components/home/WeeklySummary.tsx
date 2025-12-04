@@ -15,13 +15,13 @@ interface WeeklySummaryProps {
 
 export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummaryProps) {
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
+    <div className="bg-white rounded-xl shadow-md p-6 h-full flex flex-col">
       <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
         <BarChart3 className="w-5 h-5 text-cyan-600 mr-2" />
         Weekly Summary
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-3 flex-1">
         <div className="flex items-center justify-between py-2">
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -73,13 +73,15 @@ export default function WeeklySummary({ stats, onNewAppointment }: WeeklySummary
         </div>
       </div>
 
-      <button
-        onClick={onNewAppointment}
-        className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
-      >
-        <Plus className="w-5 h-5" />
-        <span>New Appointment</span>
-      </button>
+      <div className="mt-auto pt-6">
+        <button
+          onClick={onNewAppointment}
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 shadow-md hover:shadow-lg"
+        >
+          <Plus className="w-5 h-5" />
+          <span>New Appointment</span>
+        </button>
+      </div>
     </div>
   );
 }
