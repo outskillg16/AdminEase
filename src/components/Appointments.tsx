@@ -503,7 +503,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard
             icon={Calendar}
             label="Scheduled This Month"
@@ -731,16 +731,16 @@ function StatsCard({
   loading?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
-      <div className={`${color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
-        <Icon className="w-6 h-6" />
+    <div className="bg-white rounded-xl shadow-md p-4 border border-gray-100 hover:shadow-lg transition-shadow">
+      <div className={`${color} w-10 h-10 rounded-lg flex items-center justify-center mb-3`}>
+        <Icon className="w-5 h-5" />
       </div>
       {loading ? (
-        <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+        <div className="h-7 bg-gray-200 rounded animate-pulse mb-1"></div>
       ) : (
-        <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+        <p className="text-2xl font-bold text-gray-900 mb-0.5">{value}</p>
       )}
-      <p className="text-sm font-medium text-gray-900 mb-1">{label}</p>
+      <p className="text-sm font-medium text-gray-900 mb-0.5">{label}</p>
       {subtext && <p className="text-xs text-gray-500">{subtext}</p>}
     </div>
   );
