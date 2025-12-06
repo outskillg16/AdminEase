@@ -1,5 +1,32 @@
 const WEBHOOK_URL = 'https://n8n.srv1009698.hstgr.cloud/webhook/appointment-webhook';
 
+/**
+ * APPOINTMENT SOURCE TRACKING FOR ANALYTICS
+ *
+ * When implementing appointment creation through AI integrations,
+ * ensure the 'appointment_source' field is set appropriately:
+ *
+ * - 'ai_chat': When appointment is created via AI Assistant chat
+ * - 'ai_voice': When appointment is created via AI Assistant voice
+ * - 'voice_agent_call': When appointment is created via phone call to Voice Agent
+ *
+ * Implementation Notes:
+ * 1. When N8N webhook creates appointments in response to AI chat messages,
+ *    set appointment_source = 'ai_chat'
+ *
+ * 2. When N8N webhook creates appointments from voice recognition,
+ *    set appointment_source = 'ai_voice'
+ *
+ * 3. When Voice Agent (phone system) creates appointments,
+ *    set appointment_source = 'voice_agent_call'
+ *
+ * Example webhook payload should include:
+ * {
+ *   ...appointmentData,
+ *   appointment_source: 'ai_chat' // or 'ai_voice' or 'voice_agent_call'
+ * }
+ */
+
 export interface IntentClassification {
   category: 'SCHEDULE_VIEW' | 'BOOKING_MANAGEMENT' | 'TIME_BLOCKING' | 'GENERAL_QUERY';
   action: string;

@@ -58,6 +58,7 @@ interface Appointment {
   location_type: 'virtual' | 'in_person' | 'phone';
   location_details?: string;
   cancellation_reason?: string;
+  appointment_source?: 'ui_manual' | 'ai_chat' | 'ai_voice' | 'voice_agent_call';
   created_at: string;
   updated_at: string;
 }
@@ -1138,6 +1139,9 @@ export function CreateAppointmentModal({ user, onClose, onSuccess, setError }: a
           location_type: formData.locationType,
           location_details: formData.locationDetails || null,
           reminder_sent: false,
+
+          // Source tracking for analytics
+          appointment_source: 'ui_manual',
         });
 
       if (insertError) throw insertError;
