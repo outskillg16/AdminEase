@@ -27,6 +27,8 @@ import {
   UserPlus,
   Bot,
   Users,
+  RefreshCw,
+  Mic,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { validators, filters } from '../utils/validation';
@@ -71,17 +73,20 @@ interface AppointmentNote {
 
 interface Stats {
   scheduled: number;
-  completed: number;
-  completionRate: number;
-  avgDuration: number;
+  rescheduled: number;
+  cancelled: number;
+  voiceAgent: number;
 }
 
 export default function Appointments({ user, onLogout }: AppointmentsProps) {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
-  const [stats, setStats] = useState<Stats>({ scheduled: 0, completed: 0, completionRate: 0, avgDuration: 0 });
+  const [stats, setStats] = useState<Stats>({ scheduled: 0, rescheduled: 0, cancelled: 0, voiceAgent: 0 });
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [viewFilter, setViewFilter] = useState<'upcoming' | 'past' | 'all'>('upcoming');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -107,6 +112,10 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
   }, []);
 
   useEffect(() => {
+    loadMonthlyStats();
+  }, [selectedMonth, selectedYear, user.id]);
+
+  useEffect(() => {
     filterAppointments();
   }, [appointments, viewFilter, searchQuery, statusFilter, serviceFilter]);
 
@@ -121,7 +130,6 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
 
       if (fetchError) throw fetchError;
       setAppointments(data || []);
-      calculateStats(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -129,17 +137,62 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
     }
   };
 
-  const calculateStats = (data: Appointment[]) => {
-    const scheduled = data.filter(a => a.status === 'scheduled').length;
-    const completed = data.filter(a => a.status === 'completed').length;
-    const total = data.length;
-    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-    const completedAppointments = data.filter(a => a.status === 'completed');
-    const avgDuration = completedAppointments.length > 0
-      ? Math.round(completedAppointments.reduce((sum, a) => sum + a.duration_minutes, 0) / completedAppointments.length)
-      : 0;
+  const loadMonthlyStats = async () => {
+    try {
+      setStatsLoading(true);
 
-    setStats({ scheduled, completed, completionRate, avgDuration });
+      const startOfMonth = new Date(selectedYear, selectedMonth, 1);
+      const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
+
+      const startISO = startOfMonth.toISOString();
+      const endISO = endOfMonth.toISOString();
+
+      const [scheduledRes, rescheduledRes, cancelledRes, voiceAgentRes] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'scheduled')
+          .gte('appointment_date', startISO)
+          .lte('appointment_date', endISO),
+
+        supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'rescheduled')
+          .gte('appointment_date', startISO)
+          .lte('appointment_date', endISO),
+
+        supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('status', 'canceled')
+          .gte('appointment_date', startISO)
+          .lte('appointment_date', endISO),
+
+        supabase
+          .from('appointments')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('appointment_source', 'voice_agent_call')
+          .gte('appointment_date', startISO)
+          .lte('appointment_date', endISO),
+      ]);
+
+      setStats({
+        scheduled: scheduledRes.count || 0,
+        rescheduled: rescheduledRes.count || 0,
+        cancelled: cancelledRes.count || 0,
+        voiceAgent: voiceAgentRes.count || 0,
+      });
+    } catch (err: any) {
+      console.error('Error loading monthly stats:', err);
+      setStats({ scheduled: 0, rescheduled: 0, cancelled: 0, voiceAgent: 0 });
+    } finally {
+      setStatsLoading(false);
+    }
   };
 
   const filterAppointments = () => {
@@ -211,6 +264,47 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
     if (type === 'virtual') return Video;
     if (type === 'in_person') return MapPin;
     return Phone;
+  };
+
+  const getMonthName = (monthIndex: number) => {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[monthIndex];
+  };
+
+  const generateMonthOptions = () => {
+    const options = [];
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(currentYear, currentMonth - i, 1);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const monthName = getMonthName(month);
+
+      options.push({
+        value: `${year}-${String(month + 1).padStart(2, '0')}`,
+        label: `${monthName} ${year}`,
+      });
+    }
+
+    for (let i = 1; i <= 6; i++) {
+      const date = new Date(currentYear, currentMonth + i, 1);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const monthName = getMonthName(month);
+
+      options.push({
+        value: `${year}-${String(month + 1).padStart(2, '0')}`,
+        label: `${monthName} ${year}`,
+      });
+    }
+
+    return options;
   };
 
   const getTabIcon = (tab: string) => {
@@ -386,12 +480,62 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
           </div>
         )}
 
+        {/* Month Selector */}
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6 border border-gray-100">
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-gray-700">Filter by Month:</label>
+            <select
+              value={`${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`}
+              onChange={(e) => {
+                const [year, month] = e.target.value.split('-');
+                setSelectedYear(parseInt(year));
+                setSelectedMonth(parseInt(month) - 1);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 bg-white"
+            >
+              {generateMonthOptions().map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard icon={Calendar} label="Scheduled" value={stats.scheduled} color="bg-blue-50 text-blue-600" />
-          <StatsCard icon={CheckCircle} label="Completed" value={stats.completed} color="bg-green-50 text-green-600" />
-          <StatsCard icon={FileText} label="Completion Rate" value={`${stats.completionRate}%`} color="bg-purple-50 text-purple-600" />
-          <StatsCard icon={Clock} label="Avg Duration" value={`${stats.avgDuration} min`} color="bg-orange-50 text-orange-600" />
+          <StatsCard
+            icon={Calendar}
+            label="Scheduled This Month"
+            value={stats.scheduled}
+            color="bg-blue-50 text-blue-600"
+            subtext={getMonthName(selectedMonth)}
+            loading={statsLoading}
+          />
+          <StatsCard
+            icon={RefreshCw}
+            label="Rescheduled This Month"
+            value={stats.rescheduled}
+            color="bg-orange-50 text-orange-600"
+            subtext={getMonthName(selectedMonth)}
+            loading={statsLoading}
+          />
+          <StatsCard
+            icon={XCircle}
+            label="Cancelled This Month"
+            value={stats.cancelled}
+            color="bg-red-50 text-red-600"
+            subtext={getMonthName(selectedMonth)}
+            loading={statsLoading}
+          />
+          <StatsCard
+            icon={Phone}
+            label="Voice Agent Bookings"
+            value={stats.voiceAgent}
+            color="bg-purple-50 text-purple-600"
+            subtext={getMonthName(selectedMonth)}
+            loading={statsLoading}
+          />
         </div>
 
         {/* Filters */}
@@ -571,14 +715,33 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
   );
 }
 
-function StatsCard({ icon: Icon, label, value, color }: { icon: any; label: string; value: string | number; color: string }) {
+function StatsCard({
+  icon: Icon,
+  label,
+  value,
+  color,
+  subtext,
+  loading,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+  color: string;
+  subtext?: string;
+  loading?: boolean;
+}) {
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+    <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg transition-shadow">
       <div className={`${color} w-12 h-12 rounded-lg flex items-center justify-center mb-4`}>
         <Icon className="w-6 h-6" />
       </div>
-      <p className="text-2xl font-bold text-gray-900 mb-1">{value}</p>
-      <p className="text-sm text-gray-600">{label}</p>
+      {loading ? (
+        <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+      ) : (
+        <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
+      )}
+      <p className="text-sm font-medium text-gray-900 mb-1">{label}</p>
+      {subtext && <p className="text-xs text-gray-500">{subtext}</p>}
     </div>
   );
 }
