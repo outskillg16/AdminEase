@@ -1,6 +1,7 @@
 import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DemoVideoModal from './DemoVideoModal';
 
 interface LandingPageProps {
   user: any;
@@ -10,6 +11,7 @@ interface LandingPageProps {
 export default function LandingPage({ user, onSignOut }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,10 +89,16 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
               AI-powered automation that handles your calls, schedules appointments, and organizes documents—so you can focus on what you do best.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-              <button className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold text-lg shadow-lg hover:shadow-xl">
+              <button
+                onClick={() => setIsVideoModalOpen(true)}
+                className="px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:-translate-y-1 transition-all duration-300 font-semibold text-lg shadow-lg hover:shadow-xl hover:shadow-blue-500/50"
+              >
                 Watch 2-Min Demo
               </button>
-              <button className="px-8 py-4 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition font-semibold text-lg">
+              <button
+                onClick={() => navigate('/auth')}
+                className="px-8 py-4 border-2 border-blue-600 text-blue-600 bg-white rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300 font-semibold text-lg"
+              >
                 Learn More
               </button>
             </div>
@@ -438,7 +446,10 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
               ))}
             </div>
             <div className="text-center">
-              <button className="px-10 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition font-bold text-lg shadow-lg">
+              <button
+                onClick={() => navigate('/auth')}
+                className="px-10 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition font-bold text-lg shadow-lg"
+              >
                 Get Started Today
               </button>
               <p className="text-sm text-blue-100 mt-4">Setup in 15 minutes • Cancel anytime</p>
@@ -588,6 +599,11 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
           </div>
         </div>
       </footer>
+
+      <DemoVideoModal
+        isOpen={isVideoModalOpen}
+        onClose={() => setIsVideoModalOpen(false)}
+      />
     </div>
   );
 }
