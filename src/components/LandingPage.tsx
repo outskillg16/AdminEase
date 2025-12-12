@@ -71,7 +71,7 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
                   Log In
                 </button>
                 <button
-                  onClick={() => navigate('/auth')}
+                  onClick={() => navigate('/auth?mode=signup')}
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                 >
                   Sign Up
@@ -100,7 +100,7 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
                 Watch 2-Min Demo
               </button>
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signup')}
                 className="px-8 py-4 border-2 border-blue-600 text-blue-600 bg-white rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300 font-semibold text-lg"
               >
                 Learn More
@@ -451,7 +451,7 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
             </div>
             <div className="text-center">
               <button
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signup')}
                 className="px-10 py-4 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition font-bold text-lg shadow-lg"
               >
                 Get Started Today

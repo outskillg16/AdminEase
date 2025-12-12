@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User, Github, AlertCircle, CheckCircle2, X, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -30,7 +30,9 @@ interface Toast {
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const [view, setView] = useState<AuthView>('login');
+  const [searchParams] = useSearchParams();
+  const initialView = searchParams.get('mode') === 'signup' ? 'signup' : 'login';
+  const [view, setView] = useState<AuthView>(initialView);
 
   useEffect(() => {
     document.title = view === 'login' ? 'Sign In - AdminEase' : 'Sign Up - AdminEase';
