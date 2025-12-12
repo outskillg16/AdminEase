@@ -37,6 +37,17 @@ export default function AuthPage() {
   useEffect(() => {
     document.title = view === 'login' ? 'Sign In - AdminEase' : 'Sign Up - AdminEase';
   }, [view]);
+
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setFormData(prev => ({
+        ...prev,
+        email: decodeURIComponent(emailParam)
+      }));
+    }
+  }, [searchParams]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);

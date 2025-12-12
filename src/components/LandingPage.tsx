@@ -23,9 +23,9 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
-    setToastMessage(`Thank you! We'll contact you at ${email}`);
-    setShowToast(true);
-    setEmail('');
+    if (email) {
+      navigate(`/auth?mode=signup&email=${encodeURIComponent(email)}`);
+    }
   };
 
   return (
