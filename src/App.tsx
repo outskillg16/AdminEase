@@ -62,11 +62,11 @@ function App() {
         <Route path="/auth" element={user ? <Navigate to="/home" /> : <AuthPage />} />
         <Route
           path="/home"
-          element={user ? <HomePage user={user} onLogout={handleSignOut} /> : <Navigate to="/auth" />}
+          element={user ? <HomePage user={user} onLogout={handleSignOut} /> : <Navigate to="/" />}
         />
         <Route
           path="/dashboard"
-          element={user ? <Dashboard user={user} onLogout={handleSignOut} /> : <Navigate to="/auth" />}
+          element={user ? <Dashboard user={user} onLogout={handleSignOut} /> : <Navigate to="/" />}
         />
         <Route
           path="/onboarding"
@@ -74,7 +74,7 @@ function App() {
             user ? (
               <OnboardingForm user={user} onLogout={handleSignOut} onComplete={() => window.location.href = '/home'} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -84,7 +84,7 @@ function App() {
             user ? (
               <AIConfiguration user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -94,7 +94,7 @@ function App() {
             user ? (
               <CallManagement user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -104,7 +104,7 @@ function App() {
             user ? (
               <Appointments user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -114,7 +114,7 @@ function App() {
             user ? (
               <Documents user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -124,7 +124,7 @@ function App() {
             user ? (
               <AIAssistant user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
@@ -134,7 +134,7 @@ function App() {
             user ? (
               <Customers user={user} onLogout={handleSignOut} />
             ) : (
-              <Navigate to="/auth" />
+              <Navigate to="/" />
             )
           }
         />
