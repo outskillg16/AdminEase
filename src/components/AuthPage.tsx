@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Github, AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, User, Github, AlertCircle, CheckCircle2, X, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 type AuthView = 'login' | 'signup';
@@ -28,6 +29,7 @@ interface Toast {
 }
 
 export default function AuthPage() {
+  const navigate = useNavigate();
   const [view, setView] = useState<AuthView>('login');
 
   useEffect(() => {
@@ -226,8 +228,17 @@ export default function AuthPage() {
       {/* Auth Card */}
       <div className="relative w-full max-w-md">
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-white/20">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate('/')}
+            className="absolute top-6 left-6 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors group"
+          >
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="text-sm font-medium">Back</span>
+          </button>
+
           {/* Header */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 mt-4">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
               {view === 'login' ? 'Welcome Back' : 'Create Account'}
             </h2>
