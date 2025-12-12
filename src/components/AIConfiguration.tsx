@@ -20,6 +20,7 @@ import {
   Users,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import Toast from './Toast';
 
 interface AIConfigurationPageProps {
   user: {
@@ -61,6 +62,9 @@ export default function AIConfigurationPage({ user, onLogout }: AIConfigurationP
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState('AI Configuration');
   const [businessProfileId, setBusinessProfileId] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error' | 'info'>('success');
 
   const fullName = user.user_metadata?.full_name || user.email.split('@')[0];
   const initials = fullName
@@ -158,9 +162,14 @@ export default function AIConfigurationPage({ user, onLogout }: AIConfigurationP
       }
 
       setIsEditMode(false);
+      setToastMessage('Configuration saved successfully');
+      setToastType('success');
+      setShowToast(true);
     } catch (err: any) {
       console.error('Error saving configuration:', err);
-      alert('Failed to save configuration');
+      setToastMessage('Failed to save configuration');
+      setToastType('error');
+      setShowToast(true);
     } finally {
       setSaving(false);
     }
@@ -505,6 +514,13 @@ export default function AIConfigurationPage({ user, onLogout }: AIConfigurationP
           )}
         </div>
       </main>
+
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users,
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DemoVideoModal from './DemoVideoModal';
+import Toast from './Toast';
 
 interface LandingPageProps {
   user: any;
@@ -12,6 +13,8 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,7 +23,8 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
 
   const handleWaitlist = (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Thank you! We'll contact you at ${email}`);
+    setToastMessage(`Thank you! We'll contact you at ${email}`);
+    setShowToast(true);
     setEmail('');
   };
 
@@ -603,6 +607,13 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
       <DemoVideoModal
         isOpen={isVideoModalOpen}
         onClose={() => setIsVideoModalOpen(false)}
+      />
+
+      <Toast
+        message={toastMessage}
+        type="success"
+        isOpen={showToast}
+        onClose={() => setShowToast(false)}
       />
     </div>
   );
