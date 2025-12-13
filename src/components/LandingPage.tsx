@@ -33,10 +33,13 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
       {/* Header/Navigation */}
       <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
         <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+          >
             <Zap className="w-8 h-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">AdminEase</span>
-          </div>
+          </button>
           <div className="hidden md:flex items-center space-x-8">
             <a href="#how-it-works" className="text-gray-600 hover:text-blue-600 transition">How It Works</a>
             <a href="#benefits" className="text-gray-600 hover:text-blue-600 transition">Benefits</a>
