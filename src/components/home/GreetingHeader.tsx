@@ -18,7 +18,7 @@ export default function GreetingHeader({ userName, appointmentCount, currentDate
     } else if (hour >= 17 && hour < 21) {
       return { greeting: 'Good Evening', icon: <Sun className="w-8 h-8 text-orange-300" /> };
     } else {
-      return { greeting: 'Good Night', icon: <Moon className="w-8 h-8 text-blue-200" /> };
+      return { greeting: 'Hello There... It\'s Late!', icon: <Moon className="w-8 h-8 text-blue-200" /> };
     }
   };
 
