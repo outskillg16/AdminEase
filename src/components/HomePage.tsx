@@ -13,7 +13,6 @@ import {
   Phone,
   Users,
   Settings,
-  Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import GreetingHeader from './home/GreetingHeader';
@@ -269,7 +268,7 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
       case 'AI Assistant':
         return <Bot {...iconProps} />;
       case 'AI Assist Nimish':
-        return <Sparkles {...iconProps} />;
+        return <Bot {...iconProps} />;
       case 'Call Management':
         return <Phone {...iconProps} />;
       case 'Appointments':
