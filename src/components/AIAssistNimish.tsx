@@ -106,6 +106,8 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
   };
 
   const formatSuccessResponse = (response: any): string => {
+    console.log('📥 Formatting response:', response);
+
     if (response.data?.appointments) {
       const appointments = response.data.appointments;
       if (Array.isArray(appointments) && appointments.length > 0) {
@@ -117,10 +119,36 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
       }
       return 'You have no appointments scheduled.';
     }
+
     if (response.data?.confirmation) {
       return response.data.confirmation;
     }
-    return response.message;
+
+    if (response.data?.output) {
+      return response.data.output;
+    }
+
+    if (response.data?.response) {
+      return response.data.response;
+    }
+
+    if (response.data?.text) {
+      return response.data.text;
+    }
+
+    if (typeof response.data === 'string') {
+      return response.data;
+    }
+
+    if (response.data && Object.keys(response.data).length > 0) {
+      const firstKey = Object.keys(response.data)[0];
+      if (typeof response.data[firstKey] === 'string') {
+        return response.data[firstKey];
+      }
+      return JSON.stringify(response.data, null, 2);
+    }
+
+    return response.message || 'Request processed successfully';
   };
 
   const handleSendMessage = async (userInput: string) => {
