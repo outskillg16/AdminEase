@@ -17,6 +17,7 @@ import {
   UserPlus,
   Phone,
   Users,
+  Sparkles,
 } from 'lucide-react';
 import MessageList, { Message } from './ai-assistant/MessageList';
 import InputControls from './ai-assistant/InputControls';
@@ -207,8 +208,9 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
       case 'AI Configuration':
         return <Settings {...iconProps} />;
       case 'AI Assistant':
-      case 'AI Assist Nimish':
         return <Bot {...iconProps} />;
+      case 'AI Assist Nimish':
+        return <Sparkles {...iconProps} />;
       case 'Call Management':
         return <Phone {...iconProps} />;
       case 'Appointments':
@@ -347,7 +349,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
           <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
-                <Bot className="w-6 h-6 text-white" />
+                <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold">AI Assist Nimish</h2>
