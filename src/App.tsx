@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
 import AIAssistant from './components/AIAssistant';
+import AIAssistNimish from './components/AIAssistNimish';
 import CallManagement from './components/CallManagement';
 import Appointments from './components/Appointments';
 import Documents from './components/Documents';
@@ -123,6 +124,16 @@ function App() {
           element={
             user ? (
               <AIAssistant user={user} onLogout={handleSignOut} />
+            ) : (
+              <Navigate to="/" />
+            )
+          }
+        />
+        <Route
+          path="/ai-assist-nimish"
+          element={
+            user ? (
+              <AIAssistNimish user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/" />
             )
