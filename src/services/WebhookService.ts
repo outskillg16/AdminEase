@@ -1,6 +1,6 @@
 //const WEBHOOK_URL = 'https://n8n.srv1009698.hstgr.cloud/webhook/appointment-webhook';
 //const WEBHOOK_URL = 'https://nimishai2025.app.n8n.cloud/webhook-test/6f7e3c42-4d9d-44ec-abcb-8def1407e0b2';
-const WEBHOOK_URL = 'https://nimishai2025.app.n8n.cloud/webhook-test/a3d06230-5f0b-430d-8b08-3a2069cadb79';
+const WEBHOOK_URL = 'https://nimishai2025.app.n8n.cloud/webhook-test/48331931-d244-4136-a020-0bc2b0848230';
 /**
  * APPOINTMENT SOURCE TRACKING FOR ANALYTICS
  *
