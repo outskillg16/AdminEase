@@ -1,4 +1,5 @@
 import { Bot, User, Loader2 } from 'lucide-react';
+import Markdown from 'react-markdown';
 
 export interface Message {
   id: string;
@@ -66,7 +67,9 @@ export default function MessageList({ messages }: MessageListProps) {
                   </div>
                 </div>
                 <div className="bg-cyan-600 text-white rounded-lg px-4 py-2">
-                  <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <Markdown>{message.content}</Markdown>
+                  </div>
                 </div>
               </div>
             </div>
@@ -83,7 +86,9 @@ export default function MessageList({ messages }: MessageListProps) {
                 <span className="text-xs text-gray-500">{formatTime(message.timestamp)}</span>
               </div>
               <div className="bg-gray-100 text-gray-900 rounded-lg px-4 py-2">
-                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+                <div className="prose prose-sm max-w-none">
+                  <Markdown>{message.content}</Markdown>
+                </div>
               </div>
             </div>
           </div>
