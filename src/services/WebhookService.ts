@@ -84,7 +84,7 @@ export async function sendToN8nWebhook(
     console.log('📦 Payload:', payload);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     const response = await fetch(WEBHOOK_URL, {
       method: 'POST',
