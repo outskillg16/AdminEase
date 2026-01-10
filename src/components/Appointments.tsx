@@ -117,7 +117,7 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
 
   useEffect(() => {
     filterAppointments();
-  }, [appointments, viewFilter, searchQuery, statusFilter, serviceFilter]);
+  }, [appointments, viewFilter, searchQuery, statusFilter, serviceFilter, selectedMonth, selectedYear]);
 
   const loadAppointments = async () => {
     try {
@@ -198,6 +198,14 @@ export default function Appointments({ user, onLogout }: AppointmentsProps) {
   const filterAppointments = () => {
     let filtered = [...appointments];
     const now = new Date();
+
+    const startOfMonth = new Date(selectedYear, selectedMonth, 1);
+    const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
+
+    filtered = filtered.filter(a => {
+      const aptDate = new Date(a.appointment_date);
+      return aptDate >= startOfMonth && aptDate <= endOfMonth;
+    });
 
     if (viewFilter === 'upcoming') {
       filtered = filtered.filter(a => new Date(a.appointment_date) >= now);
