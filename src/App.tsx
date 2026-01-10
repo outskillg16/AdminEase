@@ -7,7 +7,7 @@ import Dashboard from './components/Dashboard';
 import OnboardingForm from './components/OnboardingForm';
 import AIConfiguration from './components/AIConfiguration';
 import AIAssistant from './components/AIAssistant';
-import AIAssistNimish from './components/AIAssistNimish';
+import AIAssistantTidyPaws from './components/AIAssistantTidyPaws';
 import CallManagement from './components/CallManagement';
 import Appointments from './components/Appointments';
 import Documents from './components/Documents';
@@ -130,10 +130,10 @@ function App() {
           }
         />
         <Route
-          path="/ai-assist-nimish"
+          path="/ai-assistant-tidypaws"
           element={
             user ? (
-              <AIAssistNimish user={user} onLogout={handleSignOut} />
+              <AIAssistantTidyPaws user={user} onLogout={handleSignOut} />
             ) : (
               <Navigate to="/" />
             )

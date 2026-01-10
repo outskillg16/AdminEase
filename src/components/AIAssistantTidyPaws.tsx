@@ -25,7 +25,7 @@ import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
 import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
 import { classifyIntent, sendToN8nWebhook } from '../services/WebhookService';
 
-interface AIAssistNimishProps {
+interface AIAssistantTidyPawsProps {
   user: {
     id: string;
     email: string;
@@ -40,14 +40,14 @@ function generateMessageId(): string {
   return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
-export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) {
+export default function AIAssistantTidyPaws({ user, onLogout }: AIAssistantTidyPawsProps) {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [activeTab, setActiveTab] = useState('AI Assist Nimish');
+  const [activeTab, setActiveTab] = useState('AI Assistant TidyPaws');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { isListening, transcript, startListening, stopListening, resetTranscript, isSupported: voiceSupported } = useVoiceRecognition();
@@ -62,7 +62,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
     .slice(0, 2);
 
   useEffect(() => {
-    document.title = 'AI Assist Nimish - AdminEase';
+    document.title = 'AI Assistant TidyPaws - AdminEase';
   }, []);
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
     if (tab === 'Documents') navigate('/documents');
     if (tab === 'Customers') navigate('/customers');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
-    if (tab === 'AI Assist Nimish') navigate('/ai-assist-nimish');
+    if (tab === 'AI Assistant TidyPaws') navigate('/ai-assistant-tidypaws');
   };
 
   const addMessage = (message: Message) => {
@@ -237,7 +237,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
         return <Settings {...iconProps} />;
       case 'AI Assistant':
         return <Bot {...iconProps} />;
-      case 'AI Assist Nimish':
+      case 'AI Assistant TidyPaws':
         return <Sparkles {...iconProps} />;
       case 'Call Management':
         return <Phone {...iconProps} />;
@@ -252,7 +252,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
     }
   };
 
-  const menuTabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'AI Assist Nimish', 'Call Management', 'Appointments', 'Documents', 'Customers'];
+  const menuTabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'AI Assistant TidyPaws', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -380,7 +380,7 @@ export default function AIAssistNimish({ user, onLogout }: AIAssistNimishProps) 
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">AI Assist Nimish</h2>
+                <h2 className="text-lg font-semibold">AI Assistant TidyPaws</h2>
                 <p className="text-sm text-gray-500">Always here to help</p>
               </div>
             </div>
