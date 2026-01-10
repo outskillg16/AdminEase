@@ -1,4 +1,4 @@
-import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown } from 'lucide-react';
+import { Phone, Calendar, FileCheck, Clock, CheckCircle, Zap, TrendingUp, Users, ChevronDown, Bot } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DemoVideoModal from './DemoVideoModal';
@@ -57,6 +57,13 @@ export default function LandingPage({ user, onSignOut }: LandingPageProps) {
                   className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition"
                 >
                   Home
+                </button>
+                <button
+                  onClick={() => navigate('/ai-assistant-tidypaws')}
+                  className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition flex items-center gap-2"
+                >
+                  <Bot className="w-4 h-4" />
+                  AI Assistant TidyPaws
                 </button>
                 <button
                   onClick={onSignOut}

@@ -13,6 +13,7 @@ import {
   Phone,
   Users,
   Settings,
+  Sparkles,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import GreetingHeader from './home/GreetingHeader';
@@ -247,13 +248,14 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
     if (tab === 'Onboarding') navigate('/onboarding');
     if (tab === 'AI Configuration') navigate('/ai-configuration');
     if (tab === 'AI Assistant') navigate('/ai-assistant');
+    if (tab === 'AI Assistant TidyPaws') navigate('/ai-assistant-tidypaws');
     if (tab === 'Call Management') navigate('/call-management');
     if (tab === 'Appointments') navigate('/appointments');
     if (tab === 'Documents') navigate('/documents');
     if (tab === 'Customers') navigate('/customers');
   };
 
-  const tabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'Call Management', 'Appointments', 'Documents', 'Customers'];
+  const tabs = ['Home', 'Onboarding', 'AI Configuration', 'AI Assistant', 'AI Assistant TidyPaws', 'Call Management', 'Appointments', 'Documents', 'Customers'];
 
   const getTabIcon = (tab: string) => {
     const iconProps = { className: "w-5 h-5" };
@@ -266,6 +268,8 @@ export default function HomePage({ user, onLogout }: HomePageProps) {
         return <Settings {...iconProps} />;
       case 'AI Assistant':
         return <Bot {...iconProps} />;
+      case 'AI Assistant TidyPaws':
+        return <Sparkles {...iconProps} />;
       case 'Call Management':
         return <Phone {...iconProps} />;
       case 'Appointments':
